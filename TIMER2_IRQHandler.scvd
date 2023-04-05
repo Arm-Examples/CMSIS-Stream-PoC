@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component_viewer schemaVersion="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="Component_Viewer.xsd">
+  <component name="TIMER2_IRQHandler" version="1.0.0"/>    <!-- name and version of the component  -->
+
+  <events>
+  <group>
+    <component name="TIMER2_IRQHandler"    brief="T2IRQ"    No="0x00"   prefix="EvrIRQ_"    info="Timer2 Interrupt Handler" />
+  </group>
+
+    <event id="1" level="Op" property="AD conversion"       value="" info="AD conversion started"/>
+    <event id="2" level="Op" property="DA conversion"       value="" info="DA conversion started"/>
+
+  </events>
+</component_viewer>

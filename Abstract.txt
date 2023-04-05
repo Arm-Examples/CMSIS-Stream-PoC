@@ -1,0 +1,25 @@
+CMSIS-DSP filer project using Keil RTX5
+---------------------------------------
+
+Example functionality:                                                   
+ - Clock Settings:
+   - XTAL  =  12 MHz
+   - PLL0  = 400 MHz
+   - CCLK  = 100 MHz
+
+Filter
+------
+Filter Type:                 Lowpass
+Sampling Frequency [Hz]:       32000
+Passband Edge Frequency [Hz]:   3200
+Passband Ripple [dB]:              0.1
+Stopband Edge Frequency [Hz]:   9600
+Stopband Attenuation [dB]:        60
+
+DSP blocksize: 256
+
+Note:
+This example uses the CMSIS 5 DSP library and the Keil RTX version 5 real-time
+operating system based on CMSIS-RTOS API version 2.
+It completely runs in simulation and does not require any hardware to be
+present.
