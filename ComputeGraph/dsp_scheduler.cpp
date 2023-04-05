@@ -78,9 +78,9 @@ CG_AFTER_INCLUDES
 Description of the scheduling. 
 
 */
-static unsigned int schedule[3]=
+static unsigned int schedule[5]=
 { 
-0,2,1,
+0,4,2,3,1,
 };
 
 CG_BEFORE_FIFO_BUFFERS
@@ -91,14 +91,24 @@ FIFO buffers
 ************/
 #define FIFOSIZE0 256
 #define FIFOSIZE1 256
+#define FIFOSIZE2 256
+#define FIFOSIZE3 256
 
 #define BUFFERSIZE1 256
 CG_BEFORE_BUFFER
-q15_t dsp_buf1[BUFFERSIZE1]={0};
+float32_t dsp_buf1[BUFFERSIZE1]={0};
 
 #define BUFFERSIZE2 256
 CG_BEFORE_BUFFER
 q15_t dsp_buf2[BUFFERSIZE2]={0};
+
+#define BUFFERSIZE3 256
+CG_BEFORE_BUFFER
+q15_t dsp_buf3[BUFFERSIZE3]={0};
+
+#define BUFFERSIZE4 256
+CG_BEFORE_BUFFER
+float32_t dsp_buf4[BUFFERSIZE4]={0};
 
 
 CG_BEFORE_SCHEDULER_FUNCTION
@@ -111,16 +121,20 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /*
     Create FIFOs objects
     */
-    FIFO<q15_t,FIFOSIZE0,1,0> fifo0(dsp_buf1);
+    FIFO<float32_t,FIFOSIZE0,1,0> fifo0(dsp_buf1);
     FIFO<q15_t,FIFOSIZE1,1,0> fifo1(dsp_buf2);
+    FIFO<q15_t,FIFOSIZE2,1,0> fifo2(dsp_buf3);
+    FIFO<float32_t,FIFOSIZE3,1,0> fifo3(dsp_buf4);
 
     CG_BEFORE_NODE_INIT;
     /* 
     Create node objects
     */
-    ADC<q15_t,256> adc(fifo0,dsp_context);
-    DAC<q15_t,256> dac(fifo1,dsp_context);
-    IIR<q15_t,256,q15_t,256> iir(fifo0,fifo1);
+    ADC<float32_t,256> adc(fifo0,dsp_context);
+    DAC<float32_t,256> dac(fifo3,dsp_context);
+    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo2);
+    Q15TOF32<q15_t,256,float32_t,256> toF32(fifo2,fifo3);
+    F32TOQ15<float32_t,256,q15_t,256> toQ15(fifo0,fifo1);
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;
@@ -128,7 +142,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     {
         /* Run a schedule iteration */
         CG_BEFORE_ITERATION;
-        for(unsigned long id=0 ; id < 3; id++)
+        for(unsigned long id=0 ; id < 5; id++)
         {
             CG_BEFORE_NODE_EXECUTION;
 
@@ -149,6 +163,18 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
                 case 2:
                 {
                    cgStaticError = iir.run();
+                }
+                break;
+
+                case 3:
+                {
+                   cgStaticError = toF32.run();
+                }
+                break;
+
+                case 4:
+                {
+                   cgStaticError = toQ15.run();
                 }
                 break;
 

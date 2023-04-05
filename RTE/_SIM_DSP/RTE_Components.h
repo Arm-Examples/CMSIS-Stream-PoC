@@ -4,7 +4,7 @@
  *      *** Do not modify ! ***
  *
  * Project: 'DSP_App' 
- * Target:  'SIM IIR Q31' 
+ * Target:  'SIM DSP' 
  */
 
 #ifndef RTE_COMPONENTS_H

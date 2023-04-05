@@ -11,19 +11,11 @@ extern "C"
 #endif
 
 typedef struct _DSP_DataType {
-#ifdef __FLOAT32
-  float32_t Sample[DSP_BLOCKSIZE];
-#endif
-#ifdef __Q31
-  q31_t     Sample[DSP_BLOCKSIZE];
-#endif
-#ifdef __Q15
-  q15_t     Sample[DSP_BLOCKSIZE];
-#endif
+  float32_t     Sample[DSP_BLOCKSIZE];
 } DSP_DataType;
 
 
-typedef struct DSP_context {
+typedef struct _DSP_context {
 osMemoryPoolId_t  DSP_MemPool;
 osEventFlagsId_t  DSP_Event;
 DSP_DataType      *pDataTimIrqIn;

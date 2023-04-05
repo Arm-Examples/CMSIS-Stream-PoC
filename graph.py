@@ -8,35 +8,53 @@ from cmsisdsp.cg.scheduler import GenericNode,GenericSink,GenericSource
 
 ### Define new types of Nodes 
 
-class FIR(GenericNode):
-    """
-    Definition of a ProcessingNode for the graph
-
-    Parameters
-    ----------
-    name : str
-         Name of the C variable identifying this node 
-         in the C code
-    theType : CGStaticType
-            The datatype for the input and output
-    inLength : int
-             The number of samples consumed by input
-    outLength : int 
-              The number of samples produced on output
-    """
-    def __init__(self,name,theType,inLength,outLength):
+class F32TOQ15(GenericNode):
+    def __init__(self,name,inLength):
         GenericNode.__init__(self,name)
-        self.addInput("i",theType,inLength)
-        self.addOutput("o",theType,outLength)
+        self.addInput("i",CType(F32),inLength)
+        self.addOutput("o",CType(Q15),inLength)
 
     @property
     def typeName(self):
         """The name of the C++ class implementing this node"""
-        return "FIR"
+        return "F32TOQ15"
+
+class F32TOQ31(GenericNode):
+    def __init__(self,name,inLength):
+        GenericNode.__init__(self,name)
+        self.addInput("i",CType(F32),inLength)
+        self.addOutput("o",CType(Q31),inLength)
+
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "F32TOQ31"
+
+class Q15TOF32(GenericNode):
+    def __init__(self,name,inLength):
+        GenericNode.__init__(self,name)
+        self.addInput("i",CType(Q15),inLength)
+        self.addOutput("o",CType(F32),inLength)
+
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "Q15TOF32"
+
+class Q31TOF32(GenericNode):
+    def __init__(self,name,inLength):
+        GenericNode.__init__(self,name)
+        self.addInput("i",CType(Q31),inLength)
+        self.addOutput("o",CType(F32),inLength)
+
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "Q31TOF32"
 
 class IIR(GenericNode):
     """
-    Definition of a ProcessingNode for the graph
+    Definition of an IIR node for the graph
 
     Parameters
     ----------
@@ -60,6 +78,32 @@ class IIR(GenericNode):
         """The name of the C++ class implementing this node"""
         return "IIR"
 
+class FIR(GenericNode):
+    """
+    Definition of an FIR node for the graph
+
+    Parameters
+    ----------
+    name : str
+         Name of the C variable identifying this node 
+         in the C code
+    theType : CGStaticType
+            The datatype for the input and output
+    inLength : int
+             The number of samples consumed by input
+    outLength : int 
+              The number of samples produced on output
+    """
+    def __init__(self,name,theType,inLength,outLength):
+        GenericNode.__init__(self,name)
+        self.addInput("i",theType,inLength)
+        self.addOutput("o",theType,outLength)
+
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "FIR"
+
 class DAC(GenericSink):
     """
     Definition of a Sink node for the graph
@@ -74,9 +118,9 @@ class DAC(GenericSink):
     inLength : int
              The number of samples consumed by input
     """
-    def __init__(self,name,theType,inLength):
+    def __init__(self,name,inLength):
         GenericSink.__init__(self,name)
-        self.addInput("i",theType,inLength)
+        self.addInput("i",CType(F32),inLength)
 
     @property
     def typeName(self):
@@ -97,9 +141,9 @@ class ADC(GenericSource):
     outLength : int 
               The number of samples produced on output
     """
-    def __init__(self,name,theType,outLength):
+    def __init__(self,name,outLength):
         GenericSource.__init__(self,name)
-        self.addOutput("o",theType,outLength)
+        self.addOutput("o",CType(F32),outLength)
 
     @property
     def typeName(self):
@@ -112,12 +156,15 @@ DSP_BLOCK_SIZE = 256
 # example
 sampleType=CType(Q15)
 
+f32_to_q15=F32TOQ15("toQ15",DSP_BLOCK_SIZE)
+q15_to_f32=Q15TOF32("toF32",DSP_BLOCK_SIZE)
+
 # Instantiate a Source node with a float datatype and
 # working with packet of 5 samples (each execution of the
 # source in the C code will generate 5 samples)
 # "source" is the name of the C variable that will identify
 # this node
-adc=ADC("adc",sampleType,DSP_BLOCK_SIZE)
+adc=ADC("adc",DSP_BLOCK_SIZE)
 adc.addVariableArg("dsp_context");
 # Instantiate a Processing node using a float data type for
 # both the input and output. The number of samples consumed
@@ -130,16 +177,20 @@ iir=IIR("iir",sampleType,DSP_BLOCK_SIZE,DSP_BLOCK_SIZE)
 # 5 samples each time the node is executed in the C code
 # "sink" is the name of the C variable that will identify
 # this node
-dac=DAC("dac",sampleType,DSP_BLOCK_SIZE)
+dac=DAC("dac",DSP_BLOCK_SIZE)
 dac.addVariableArg("dsp_context");
 
 # Create a Graph object
 the_graph = Graph()
 
 # Connect the source to the processing node
-the_graph.connect(adc.o,iir.i)
+the_graph.connect(adc.o,f32_to_q15.i)
+the_graph.connect(f32_to_q15.o,iir.i)
+
 # Connect the processing node to the sink
-the_graph.connect(iir.o,dac.i)
+the_graph.connect(iir.o,q15_to_f32.i)
+the_graph.connect(q15_to_f32.o,dac.i)
+
 
 
 print("Generate graphviz and code")

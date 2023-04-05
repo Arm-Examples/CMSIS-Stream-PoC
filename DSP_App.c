@@ -9,7 +9,7 @@
  *
  * This software is supplied "AS IS" without warranties of any kind.
  *
- * Copyright (c) 2016 Keil - An ARM Company. All rights reserved.
+ * Copyright (c) 2023 Keil - An ARM Company. All rights reserved.
  *----------------------------------------------------------------------------*/
 
 #include "arm_math.h"                   // ARM::CMSIS:DSP
@@ -81,15 +81,7 @@ void TIMER2_IRQHandler(void) {
   int32_t flags;
   osStatus_t status;
   
-#ifdef __FLOAT32
-  float32_t tmp;
-#endif
-#ifdef __Q31
-  q31_t     tmp;
-#endif
-#ifdef __Q15
-  q15_t     tmp;
-#endif
+  float32_t     tmp;
 
   if (LPC_TIM2->IR & (1UL <<  0)) { /* check MR0 Interrupt                       */
 
@@ -99,18 +91,9 @@ void TIMER2_IRQHandler(void) {
       /* scale value and move it in positive/negative range. (12bit Ad = 0xFFF)
          filter in range is -1.0 < value < 1.0                                   */
       tmpFilterIn =  ((float32_t)((adGdr >> 4) & 0xFFF) / (0xFFF / 2)) - 1;
-#ifdef __FLOAT32
-	    tmp  = tmpFilterIn; 
+
+      tmp = tmpFilterIn;
       g_dsp_context.pDataTimIrqOut->Sample[dataTimIrqOutIdx++] = tmp;
-#endif
-#ifdef __Q31
-      arm_float_to_q31(&tmpFilterIn, &tmp, 1); 
-      g_dsp_context.pDataTimIrqOut->Sample[dataTimIrqOutIdx++] = tmp;
-#endif
-#ifdef __Q15
-      arm_float_to_q15(&tmpFilterIn, &tmp, 1); 
-      g_dsp_context.pDataTimIrqOut->Sample[dataTimIrqOutIdx++] = tmp;
-#endif
 
       if (dataTimIrqOutIdx >= DSP_BLOCKSIZE) {
         
@@ -142,18 +125,10 @@ void TIMER2_IRQHandler(void) {
     }
     if ((dataTimIrqInIdx > 0) || (flags==EVENT_DATA_TIM_IN_SIG_OUT)) {
 
-#ifdef __FLOAT32
+
       tmp = g_dsp_context.pDataTimIrqIn->Sample[dataTimIrqInIdx++];
       tmpFilterOut = tmp;
-#endif
-#ifdef __Q31
-      tmp = g_dsp_context.pDataTimIrqIn->Sample[dataTimIrqInIdx++];
-      arm_q31_to_float(&tmp, &tmpFilterOut, 1);
-#endif
-#ifdef __Q15
-      tmp = g_dsp_context.pDataTimIrqIn->Sample[dataTimIrqInIdx++];
-      arm_q15_to_float(&tmp, &tmpFilterOut, 1);
-#endif
+
       /* move value in positive range and scale it.   (10bit DA = 0x3FF)
          filter OUT range is -1.0 < value < 1.0                */
       LPC_DAC->DACR = (((uint32_t)((tmpFilterOut + 1) * (0x03FF / 2))) & 0x03FF) <<  6;
@@ -220,29 +195,6 @@ int main (void) {
   TIM2_Init (TimerFreq);                /* initialize Timer 2 (used for DAC) */
   ADC_Init ();                          /* initialize ADC Controller         */
   DAC_Init ();                          /* initialize DAC Controller         */
-
-#ifdef __IIR
-  #ifdef __FLOAT32
-    iirInit_f32 ();
-  #endif
-  #ifdef __Q31
-    iirInit_q31 ();
-  #endif
-  #ifdef __Q15
-    iirInit_q15 ();
-  #endif
-#endif
-#ifdef __FIR
-  #ifdef __FLOAT32
-    firInit_f32 ();
-  #endif
-  #ifdef __Q31
-    firInit_q31 ();
-  #endif
-  #ifdef __Q15
-    firInit_q15 ();
-  #endif
-#endif
 
   osKernelInitialize();            /* Initialize CMSIS-RTOS                  */
   RTX_Features_Init();             /* initialize threads, events and memory  */
