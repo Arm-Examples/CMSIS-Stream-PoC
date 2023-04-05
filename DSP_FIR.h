@@ -14,8 +14,9 @@
 
 #ifdef __FIR
 
+#include "globalCGSettings.h"
+
 #define NUMTAPS        16
-#define DSP_BLOCKSIZE 256
 
 #ifdef __FLOAT32
 extern void firInit_f32 (void);

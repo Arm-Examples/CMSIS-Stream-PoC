@@ -14,8 +14,9 @@
 
 #ifdef __IIR
 
+#include "globalCGSettings.h"
+
 #define NUMSTAGES       2
-#define DSP_BLOCKSIZE 256
 
 #ifdef __FLOAT32
 extern void iirInit_f32 (void);
