@@ -2,7 +2,16 @@
 #define _GLOBAL_CG_SETTINGS_H_
 
 #include "cmsis_os2.h" 
+
 #define DSP_BLOCKSIZE 256
+
+#define AUDIO_QUEUE_DEPTH 3
+#define FILTER_BLOCKSIZE 192
+
+//#define AUDIO_QUEUE_DEPTH 2
+//#define FILTER_BLOCKSIZE 256
+
+#define CG_TIMEOUT 10
 
 
 #ifdef   __cplusplus
@@ -17,17 +26,14 @@ typedef struct _DSP_DataType {
 
 typedef struct _DSP_context {
 osMemoryPoolId_t  DSP_MemPool;
-osEventFlagsId_t  DSP_Event;
-DSP_DataType      *pDataTimIrqIn;
-DSP_DataType      *pDataTimIrqOut;
-DSP_DataType      *pDataSigModOut;
-DSP_DataType      *pDataSigModIn;
+osMessageQueueId_t computeGraphInputQueue;
+osMessageQueueId_t computeGraphOutputQueue;
+DSP_DataType      *pTimInputBuffer;
+DSP_DataType      *pTimOutputBuffer;
+int error;
 } dsp_context_t;
 
 extern dsp_context_t g_dsp_context;
-
-#define EVENT_DATA_TIM_OUT_SIG_IN    1
-#define EVENT_DATA_TIM_IN_SIG_OUT    2
 
 #ifdef   __cplusplus
 }

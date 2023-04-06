@@ -78,9 +78,9 @@ CG_AFTER_INCLUDES
 Description of the scheduling. 
 
 */
-static unsigned int schedule[5]=
+static unsigned int schedule[18]=
 { 
-0,4,2,3,1,
+0,4,2,3,0,4,2,3,1,0,4,2,3,1,4,2,3,1,
 };
 
 CG_BEFORE_FIFO_BUFFERS
@@ -89,24 +89,24 @@ CG_BEFORE_FIFO_BUFFERS
 FIFO buffers
 
 ************/
-#define FIFOSIZE0 256
-#define FIFOSIZE1 256
-#define FIFOSIZE2 256
-#define FIFOSIZE3 256
+#define FIFOSIZE0 384
+#define FIFOSIZE1 192
+#define FIFOSIZE2 192
+#define FIFOSIZE3 384
 
-#define BUFFERSIZE1 256
+#define BUFFERSIZE1 384
 CG_BEFORE_BUFFER
 float32_t dsp_buf1[BUFFERSIZE1]={0};
 
-#define BUFFERSIZE2 256
+#define BUFFERSIZE2 192
 CG_BEFORE_BUFFER
 q15_t dsp_buf2[BUFFERSIZE2]={0};
 
-#define BUFFERSIZE3 256
+#define BUFFERSIZE3 192
 CG_BEFORE_BUFFER
 q15_t dsp_buf3[BUFFERSIZE3]={0};
 
-#define BUFFERSIZE4 256
+#define BUFFERSIZE4 384
 CG_BEFORE_BUFFER
 float32_t dsp_buf4[BUFFERSIZE4]={0};
 
@@ -121,10 +121,10 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /*
     Create FIFOs objects
     */
-    FIFO<float32_t,FIFOSIZE0,1,0> fifo0(dsp_buf1);
+    FIFO<float32_t,FIFOSIZE0,0,0> fifo0(dsp_buf1);
     FIFO<q15_t,FIFOSIZE1,1,0> fifo1(dsp_buf2);
     FIFO<q15_t,FIFOSIZE2,1,0> fifo2(dsp_buf3);
-    FIFO<float32_t,FIFOSIZE3,1,0> fifo3(dsp_buf4);
+    FIFO<float32_t,FIFOSIZE3,0,0> fifo3(dsp_buf4);
 
     CG_BEFORE_NODE_INIT;
     /* 
@@ -132,9 +132,9 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     */
     ADC<float32_t,256> adc(fifo0,dsp_context);
     DAC<float32_t,256> dac(fifo3,dsp_context);
-    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo2);
-    Q15TOF32<q15_t,256,float32_t,256> toF32(fifo2,fifo3);
-    F32TOQ15<float32_t,256,q15_t,256> toQ15(fifo0,fifo1);
+    IIR<q15_t,192,q15_t,192> iir(fifo1,fifo2);
+    Q15TOF32<q15_t,192,float32_t,192> toF32(fifo2,fifo3);
+    F32TOQ15<float32_t,192,q15_t,192> toQ15(fifo0,fifo1);
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;
@@ -142,7 +142,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     {
         /* Run a schedule iteration */
         CG_BEFORE_ITERATION;
-        for(unsigned long id=0 ; id < 5; id++)
+        for(unsigned long id=0 ; id < 18; id++)
         {
             CG_BEFORE_NODE_EXECUTION;
 

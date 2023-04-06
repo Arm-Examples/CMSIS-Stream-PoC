@@ -17,7 +17,6 @@
 
 #include "globalCGSettings.h"
 
-#define NUMTAPS        16
 
 extern void firInit_f32 (void);
 extern void firExec_f32 (float32_t *pSrc, float32_t *pDst);

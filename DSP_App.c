@@ -22,16 +22,15 @@
 #include "cmsis_os2.h"                  // ARM::CMSIS:RTOS2:Keil RTX5
 #include "EventRecorder.h"              // Keil.ARM Compiler::Compiler:Event Recorder
 #include "dsp_scheduler.h"
+#include "cg_status.h"
 
-#define EVENT_DATA_TIM_OUT_SIG_IN    1
-#define EVENT_DATA_TIM_IN_SIG_OUT    2
-
-
+#include <stdio.h>
 /*----------------------------------------------------------------------------
    defines & typedefs for messages
  *----------------------------------------------------------------------------*/
 
 dsp_context_t g_dsp_context;
+
 
 uint32_t          dataTimIrqOutIdx;
 uint32_t          dataTimIrqInIdx;
@@ -78,10 +77,14 @@ float32_t tmpFilterOut;            /* 'global'  to display in LogicAnalyzer   */
  *----------------------------------------------------------------------------*/
 void TIMER2_IRQHandler(void) {
   uint32_t adGdr;
-  int32_t flags;
   osStatus_t status;
   
   float32_t     tmp;
+
+  if (g_dsp_context.error != 0)
+  {
+    return;
+  }
 
   if (LPC_TIM2->IR & (1UL <<  0)) { /* check MR0 Interrupt                       */
 
@@ -93,40 +96,55 @@ void TIMER2_IRQHandler(void) {
       tmpFilterIn =  ((float32_t)((adGdr >> 4) & 0xFFF) / (0xFFF / 2)) - 1;
 
       tmp = tmpFilterIn;
-      g_dsp_context.pDataTimIrqOut->Sample[dataTimIrqOutIdx++] = tmp;
+      g_dsp_context.pTimInputBuffer->Sample[dataTimIrqOutIdx++] = tmp;
 
       if (dataTimIrqOutIdx >= DSP_BLOCKSIZE) {
         
         // set buffer and event
         EventRecord2(1+EventLevelOp, 0, 0);
-        g_dsp_context.pDataSigModIn = g_dsp_context.pDataTimIrqOut;
-        flags = osEventFlagsSet(g_dsp_context.DSP_Event, EVENT_DATA_TIM_OUT_SIG_IN);
-        if (flags < 0) {
-          errHandler(__LINE__);
-        } 
-        
-        // allocate next output buffer
-        g_dsp_context.pDataTimIrqOut = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);        
-        if (g_dsp_context.pDataTimIrqOut == NULL) {
-          errHandler(__LINE__);
+        status = osMessageQueuePut  ( g_dsp_context.computeGraphInputQueue,
+           &g_dsp_context.pTimInputBuffer,
+           0,
+           0);
+
+        if (status != osOK)
+        {
+          g_dsp_context.error = CG_BUFFER_OVERFLOW;
+          return;
+        }
+
+        // allocate next  buffer
+        g_dsp_context.pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);        
+        if (g_dsp_context.pTimInputBuffer == NULL) {
+          g_dsp_context.error = CG_MEMORY_ALLOCATION_FAILURE;
+          return;
         }    
         
         dataTimIrqOutIdx = 0;
       }
     }
-    else {
+    else 
+    {
       errHandler(__LINE__);
     } 
     
     /* -- signal Output Section ------------------------------------------------ */
-    if (dataTimIrqInIdx == 0) {
-      // check if data is available
-      flags = osEventFlagsWait(g_dsp_context.DSP_Event, EVENT_DATA_TIM_IN_SIG_OUT, 0, 0);        
+    if (dataTimIrqInIdx == 0) 
+    {
+      status = osMessageQueueGet  ( g_dsp_context.computeGraphOutputQueue,
+                &g_dsp_context.pTimOutputBuffer,
+                0,
+                0) ;
+      if (status != osOK)
+      {
+        g_dsp_context.error = CG_BUFFER_UNDERFLOW;
+        return;
+      }
     }
-    if ((dataTimIrqInIdx > 0) || (flags==EVENT_DATA_TIM_IN_SIG_OUT)) {
+    if ((dataTimIrqInIdx > 0) || (g_dsp_context.pTimOutputBuffer != NULL)) {
 
 
-      tmp = g_dsp_context.pDataTimIrqIn->Sample[dataTimIrqInIdx++];
+      tmp = g_dsp_context.pTimOutputBuffer->Sample[dataTimIrqInIdx++];
       tmpFilterOut = tmp;
 
       /* move value in positive range and scale it.   (10bit DA = 0x3FF)
@@ -136,9 +154,11 @@ void TIMER2_IRQHandler(void) {
       if (dataTimIrqInIdx >= DSP_BLOCKSIZE) { 
         EventRecord2(2+EventLevelOp, 0, 0);
         // free input buffer       
-        status = osMemoryPoolFree(g_dsp_context.DSP_MemPool, g_dsp_context.pDataTimIrqIn);  
+        status = osMemoryPoolFree(g_dsp_context.DSP_MemPool, g_dsp_context.pTimOutputBuffer);  
+        g_dsp_context.pTimOutputBuffer = NULL;
         if (status != osOK) {
-          errHandler(__LINE__);
+          g_dsp_context.error = CG_MEMORY_ALLOCATION_FAILURE;
+          return;
         }         
         dataTimIrqInIdx = 0;
       }       
@@ -167,21 +187,45 @@ void SigMod (void __attribute__((unused)) *arg) {
  *---------------------------------------------------------------------------*/
 void RTX_Features_Init (void) {
 
-  g_dsp_context.DSP_MemPool = osMemoryPoolNew (4, sizeof(DSP_DataType), NULL);
+  osStatus_t status;
+  g_dsp_context.error = 0;
+
+  g_dsp_context.DSP_MemPool = osMemoryPoolNew (2+2*AUDIO_QUEUE_DEPTH, sizeof(DSP_DataType), NULL);
   if (g_dsp_context.DSP_MemPool == NULL) {
     errHandler(__LINE__);
   }
 
-  g_dsp_context.DSP_Event = osEventFlagsNew(NULL);
-  if (g_dsp_context.DSP_Event == NULL) {
-    errHandler(__LINE__);
-  }
-  
+
   tid_SigMod = osThreadNew(SigMod, NULL, &t_attr); /* start task Signal Modify */ 
   
-  g_dsp_context.pDataTimIrqOut = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
-  g_dsp_context.pDataSigModOut = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
+  g_dsp_context.pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
+  g_dsp_context.pTimOutputBuffer = NULL;
   
+  g_dsp_context.computeGraphInputQueue = osMessageQueueNew (AUDIO_QUEUE_DEPTH,
+        sizeof(DSP_DataType*),
+        NULL);
+
+  g_dsp_context.computeGraphOutputQueue = osMessageQueueNew (AUDIO_QUEUE_DEPTH,
+        sizeof(DSP_DataType*),
+        NULL);
+
+  /* Pre-fill output queue */
+  for(int i =0;i<AUDIO_QUEUE_DEPTH;i++)
+  {
+     DSP_DataType *buf = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);;
+     if (buf != NULL)
+     {
+      status = osMessageQueuePut  ( g_dsp_context.computeGraphOutputQueue,
+           &buf,
+           0,
+           0);
+      if (status != osOK)
+      {
+        errHandler(__LINE__);
+      }
+     }
+  }
+
   dataTimIrqOutIdx = 0;
   dataTimIrqInIdx  = 0;
 }
@@ -191,7 +235,7 @@ void RTX_Features_Init (void) {
  *---------------------------------------------------------------------------*/
 int main (void) {
 
-  EventRecorderInitialize(EventRecordAll, 1);
+  //EventRecorderInitialize(EventRecordAll, 1);
   TIM2_Init (TimerFreq);                /* initialize Timer 2 (used for DAC) */
   ADC_Init ();                          /* initialize ADC Controller         */
   DAC_Init ();                          /* initialize DAC Controller         */

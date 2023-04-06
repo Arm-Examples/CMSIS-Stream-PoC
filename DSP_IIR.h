@@ -17,7 +17,6 @@
 
 #include "globalCGSettings.h"
 
-#define NUMSTAGES       2
 
 extern void iirInit_f32 (void);
 extern void iirExec_f32 (float32_t *pSrc, float32_t *pDst);

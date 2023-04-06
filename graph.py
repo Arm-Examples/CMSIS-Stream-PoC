@@ -87,6 +87,8 @@ class ADC(GenericSource):
         return "ADC"
 
 DSP_BLOCK_SIZE = 256
+FILTER_BLOCKSIZE = 192
+#FILTER_BLOCKSIZE = 256
 
 # Define the datatype we are using for all the IOs in this
 # example
@@ -95,8 +97,8 @@ DSP_BLOCK_SIZE = 256
 sampleType=CType(Q15)
 
 # Convertion nodes since graph is in Q15
-f32_to_q15=F32TOQ15("toQ15",DSP_BLOCK_SIZE)
-q15_to_f32=Q15TOF32("toF32",DSP_BLOCK_SIZE)
+f32_to_q15=F32TOQ15("toQ15",FILTER_BLOCKSIZE)
+q15_to_f32=Q15TOF32("toF32",FILTER_BLOCKSIZE)
 
 # The ADC node generating float data (format defined
 # in TIMER2_IRQHandler)
@@ -106,8 +108,8 @@ adc.addVariableArg("dsp_context");
 # Filter : can be FIR or IIR.
 # Warning, DSP_BLOCK_SIZE value used here must be consistent
 # with the one used in C
-dsp_filter=IIR("iir",sampleType,DSP_BLOCK_SIZE,DSP_BLOCK_SIZE)
-#dsp_filter=FIR("fir",sampleType,DSP_BLOCK_SIZE,DSP_BLOCK_SIZE)
+dsp_filter=IIR("iir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
+#dsp_filter=FIR("fir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
 
 # DAC node consuming float data (format defined in TIMER2_IRQHandler)
 dac=DAC("dac",DSP_BLOCK_SIZE)

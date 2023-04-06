@@ -6,12 +6,16 @@
 #include "FIR.h"
 
 template<typename OUT,int outputSize>
-class ADC: public GenericSource<OUT,outputSize>
+class ADC;
+
+template<int outputSize>
+class ADC<float32_t,outputSize>: 
+ public GenericSource<float32_t,outputSize>
 {
 public:
-    ADC(FIFOBase<OUT> &dst,
+    ADC(FIFOBase<float32_t> &dst,
         dsp_context_t *dsp_context):
-    GenericSource<OUT,outputSize>(dst),
+    GenericSource<float32_t,outputSize>(dst),
     m_dsp_context(dsp_context)
     {
     };
@@ -28,19 +32,23 @@ public:
 
     int run() final
     {
-        int32_t flags;
         osStatus_t status;
-        OUT *output=this->getWriteBuffer();
+        float32_t *received;
+        float32_t *output=this->getWriteBuffer();
 
-        flags = osEventFlagsWait(m_dsp_context->DSP_Event, EVENT_DATA_TIM_OUT_SIG_IN, 0, osWaitForever);
-        if (flags < 0) 
+        status = osMessageQueueGet(g_dsp_context.computeGraphInputQueue,
+                &received,
+                0,
+                CG_TIMEOUT) ;
+
+        if (status != osOK) 
         {
            return(CG_BUFFER_UNDERFLOW);
         }
 
-        memcpy(output,m_dsp_context->pDataSigModIn,sizeof(OUT)*outputSize);
+        memcpy(output,received,sizeof(float32_t)*outputSize);
 
-        status = osMemoryPoolFree(m_dsp_context->DSP_MemPool, m_dsp_context->pDataSigModIn);     
+        status = osMemoryPoolFree(m_dsp_context->DSP_MemPool, received);     
         if (status != osOK) 
         {
             return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -54,12 +62,16 @@ protected:
 };
 
 template<typename IN, int inputSize>
-class DAC:public GenericSink<IN, inputSize>
+class DAC;
+
+template<int inputSize>
+class DAC<float32_t,inputSize>:
+public GenericSink<float32_t, inputSize>
 {
 public:
-    DAC(FIFOBase<IN> &src,
+    DAC(FIFOBase<float32_t> &src,
         dsp_context_t *dsp_context):
-    GenericSink<IN,inputSize>(src),
+    GenericSink<float32_t,inputSize>(src),
     m_dsp_context(dsp_context)
     { 
     };
@@ -78,25 +90,28 @@ public:
 
     int run() final
     {
-			  uint32_t flags;
-        IN *input=this->getReadBuffer();
-        memcpy(m_dsp_context->pDataSigModOut,input,sizeof(IN)*inputSize);
+	    osStatus_t status;
+        float32_t *input=this->getReadBuffer();
+        float32_t *sent;
 
-        // data is ready
-        m_dsp_context->pDataTimIrqIn = m_dsp_context->pDataSigModOut;
-        flags = osEventFlagsSet(m_dsp_context->DSP_Event, EVENT_DATA_TIM_IN_SIG_OUT);
-        if (flags < 0) 
-        {
-           return(CG_OS_ERROR);
-        }
-    
-        // allocate next output buffer
-        m_dsp_context->pDataSigModOut = (DSP_DataType*)osMemoryPoolAlloc(m_dsp_context->DSP_MemPool, 0); 
-        if (m_dsp_context->pDataSigModOut == NULL) 
+        sent = (float32_t*)osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);
+        if (sent == NULL)
         {
            return(CG_MEMORY_ALLOCATION_FAILURE);
         }
 
+        memcpy(sent,input,sizeof(float32_t)*inputSize);
+
+        status = osMessageQueuePut  ( g_dsp_context.computeGraphOutputQueue,
+           &sent,
+           0,
+           0);
+        if (status != osOK)
+        {
+            return(CG_BUFFER_OVERFLOW);
+        }
+
+       
         return(CG_SUCCESS);
     };
 
@@ -123,7 +138,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 
@@ -157,7 +177,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 
@@ -191,7 +216,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 
@@ -225,7 +255,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 

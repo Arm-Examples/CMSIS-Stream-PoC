@@ -23,7 +23,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 
@@ -53,7 +58,12 @@ public:
 
     int prepareForRunning() final
     {
-        
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
         return(CG_SUCCESS);
     };
 
@@ -83,6 +93,11 @@ public:
 
     int prepareForRunning() final
     {
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
         
         return(CG_SUCCESS);
     };

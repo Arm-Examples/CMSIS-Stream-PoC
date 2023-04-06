@@ -17,6 +17,8 @@
 #include "arm_math.h"
 #include "DSP_FIR.h"
 
+#define NUMTAPS        16
+
 
 #define F2Q15(x)  ((q15_t)(x *      32768UL))
 #define F2Q31(x)  ((q31_t)(x * 2147483648UL))
@@ -26,7 +28,7 @@
    Declare FIR state buffers and structure  
  *---------------------------------------------------------------------------*/
 
-float32_t             firState_f32[NUMTAPS + DSP_BLOCKSIZE];  
+float32_t             firState_f32[NUMTAPS + FILTER_BLOCKSIZE];  
 arm_fir_instance_f32  firInstance_f32; 
 float32_t             firCoeff_f32[NUMTAPS] =
                                  {
@@ -48,7 +50,7 @@ float32_t             firCoeff_f32[NUMTAPS] =
          0.0
                                   };
 
-q31_t                 firState_q31[NUMTAPS + DSP_BLOCKSIZE];  
+q31_t                 firState_q31[NUMTAPS + FILTER_BLOCKSIZE];  
 arm_fir_instance_q31  firInstance_q31; 
 q31_t                 firCoeff_q31[NUMTAPS] =
                                  {
@@ -70,7 +72,7 @@ q31_t                 firCoeff_q31[NUMTAPS] =
   F2Q31( 0.0)
                                   };
 
-q15_t                 firState_q15[NUMTAPS + DSP_BLOCKSIZE];  
+q15_t                 firState_q15[NUMTAPS + FILTER_BLOCKSIZE];  
 arm_fir_instance_q15  firInstance_q15; 
 q15_t                 firCoeff_q15[NUMTAPS] =
                                  {
@@ -98,17 +100,17 @@ q15_t                 firCoeff_q15[NUMTAPS] =
  *---------------------------------------------------------------------------*/
 void firInit_f32 (void) {
 
-  arm_fir_init_f32(&firInstance_f32, NUMTAPS, firCoeff_f32, firState_f32, DSP_BLOCKSIZE); 
+  arm_fir_init_f32(&firInstance_f32, NUMTAPS, firCoeff_f32, firState_f32, FILTER_BLOCKSIZE); 
 }
 
 void firInit_q31 (void) {
 
-  arm_fir_init_q31(&firInstance_q31, NUMTAPS, firCoeff_q31, firState_q31, DSP_BLOCKSIZE); 
+  arm_fir_init_q31(&firInstance_q31, NUMTAPS, firCoeff_q31, firState_q31, FILTER_BLOCKSIZE); 
 }
 
 void firInit_q15 (void) {
 
-  arm_fir_init_q15(&firInstance_q15, NUMTAPS, firCoeff_q15, firState_q15, DSP_BLOCKSIZE); 
+  arm_fir_init_q15(&firInstance_q15, NUMTAPS, firCoeff_q15, firState_q15, FILTER_BLOCKSIZE); 
 }
 
 /*----------------------------------------------------------------------------
@@ -116,17 +118,17 @@ void firInit_q15 (void) {
  *---------------------------------------------------------------------------*/
 void firExec_f32 (float32_t *pSrc, float32_t *pDst) {
 
-  arm_fir_f32(&firInstance_f32, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_fir_f32(&firInstance_f32, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 void firExec_q31 (q31_t *pSrc, q31_t *pDst) {
 
-  arm_fir_q31(&firInstance_q31, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_fir_q31(&firInstance_q31, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 void firExec_q15 (q15_t *pSrc, q15_t *pDst) {
 
-  arm_fir_q15(&firInstance_q15, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_fir_q15(&firInstance_q15, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 

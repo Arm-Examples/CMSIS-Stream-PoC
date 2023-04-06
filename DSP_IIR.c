@@ -17,6 +17,7 @@
 #include "arm_math.h"
 #include "DSP_IIR.h"
 
+#define NUMSTAGES       2
 
 
 
@@ -104,18 +105,18 @@ void iirInit_q15 (void) {
  *---------------------------------------------------------------------------*/
 void iirExec_f32 (float32_t *pSrc, float32_t *pDst) {
 
-  arm_biquad_cascade_df1_f32(&iirInstance_f32, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_biquad_cascade_df1_f32(&iirInstance_f32, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 void iirExec_q31 (q31_t *pSrc, q31_t *pDst) {
 
-  arm_biquad_cascade_df1_q31(&iirInstance_q31, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_biquad_cascade_df1_q31(&iirInstance_q31, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 
 void iirExec_q15 (q15_t *pSrc, q15_t *pDst) {
 
-  arm_biquad_cascade_df1_q15(&iirInstance_q15, pSrc, pDst, DSP_BLOCKSIZE); 
+  arm_biquad_cascade_df1_q15(&iirInstance_q15, pSrc, pDst, FILTER_BLOCKSIZE); 
 }
 
 
