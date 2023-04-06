@@ -177,11 +177,11 @@ void TIMER2_IRQHandler(void) {
 void SigMod (void __attribute__((unused)) *arg) {
  
   int error;
-  //printf("Start compute graph\r\n");
+  printf("Start compute graph\r\n");
   uint32_t nbIterations = dsp_scheduler(&error,&g_dsp_context);
 
-  //printf("Nb iterations = %d\r\n",nbIterations);
-  //printf("Error code = %d\r\n",error);
+  printf("Nb iterations = %d\r\n",nbIterations);
+  printf("Error code = %d\r\n",error);
 
 }
 

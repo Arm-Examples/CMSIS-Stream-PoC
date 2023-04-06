@@ -48,7 +48,7 @@ The original version is using 256 samples for all the blocks. Here, to demonstra
 
 It introduces an additional latency in the system since sometime the scheduling is requiring 2 calls to the source or 2 calls to the sink.
 
-This is handled thanks to the `ADC` / `DAC` nodes that are connected to the interrupt handler through queues. The depth of the queue is controlled by `AUDIO_QUEUE_DEPTH` in the file `globalCGSettins.h`. This value must be coherent with the generated scheduling to avoid overflow or underflow in the sources / sinks.
+This is handled thanks to the `ADC` / `DAC` nodes that are connected to the interrupt handler through queues. The depth of the queue is controlled by `AUDIO_QUEUE_DEPTH` in the file `globalCGSettings.h`. This value must be coherent with the generated scheduling to avoid overflow or underflow in the sources / sinks.
 
 This latency can be analyzed by using a compute graph doing nothing (`adc` connected directly to the `dac`) and using the square signal generator in the toolbox.
 
