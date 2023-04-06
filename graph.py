@@ -126,6 +126,13 @@ the_graph.connect(f32_to_q15.o,dsp_filter.i)
 the_graph.connect(dsp_filter.o,q15_to_f32.i)
 the_graph.connect(q15_to_f32.o,dac.i)
 
+# This graph can be used to study the latency
+# between the input / output of the system.
+# It can be used with the square signal
+# in the logic analyzer of uVision.
+# The square signal is defined to change of value every
+# 256 samples so corresponding to one audio buffer
+#the_graph.connect(adc.o,dac.i)
 
 
 print("Generate graphviz and code")
@@ -143,6 +150,7 @@ conf.prefix="dsp_"
 conf.schedName="dsp_scheduler"
 
 conf.eventRecorder=False
+
 
 sched = the_graph.computeSchedule(config=conf)
 

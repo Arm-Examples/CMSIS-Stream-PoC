@@ -190,7 +190,18 @@ void RTX_Features_Init (void) {
   osStatus_t status;
   g_dsp_context.error = 0;
 
-  g_dsp_context.DSP_MemPool = osMemoryPoolNew (2+2*AUDIO_QUEUE_DEPTH, sizeof(DSP_DataType), NULL);
+  /*
+
+  Output queue : AUDIO_QUEUE_DEPTH
+  Input queue : 1
+
+  Input and output buffers being worked on in the
+  interrupt handler (but not yet in the queue)
+
+  Total : 2 + 1 + AUDIO_QUEUE_DEPTH buffers
+
+  */
+  g_dsp_context.DSP_MemPool = osMemoryPoolNew (2 + 1 + AUDIO_QUEUE_DEPTH, sizeof(DSP_DataType), NULL);
   if (g_dsp_context.DSP_MemPool == NULL) {
     errHandler(__LINE__);
   }
@@ -201,7 +212,7 @@ void RTX_Features_Init (void) {
   g_dsp_context.pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
   g_dsp_context.pTimOutputBuffer = NULL;
   
-  g_dsp_context.computeGraphInputQueue = osMessageQueueNew (AUDIO_QUEUE_DEPTH,
+  g_dsp_context.computeGraphInputQueue = osMessageQueueNew (1,
         sizeof(DSP_DataType*),
         NULL);
 
@@ -209,8 +220,22 @@ void RTX_Features_Init (void) {
         sizeof(DSP_DataType*),
         NULL);
 
+  /* Pre-fill input queue */
+  DSP_DataType *buf = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);;
+  if (buf != NULL)
+  {
+   status = osMessageQueuePut  ( g_dsp_context.computeGraphInputQueue,
+        &buf,
+        0,
+        0);
+   if (status != osOK)
+   {
+     errHandler(__LINE__);
+   }
+  }
+
   /* Pre-fill output queue */
-  for(int i =0;i<AUDIO_QUEUE_DEPTH;i++)
+  for(int i =0;i<AUDIO_QUEUE_DEPTH-1;i++)
   {
      DSP_DataType *buf = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);;
      if (buf != NULL)
