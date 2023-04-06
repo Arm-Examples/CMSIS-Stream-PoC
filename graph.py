@@ -6,6 +6,9 @@ from cmsisdsp.cg.scheduler import *
 # Include definitions from the Python package
 from cmsisdsp.cg.scheduler import GenericNode,GenericSink,GenericSource
 
+# When true the graph is just connecting the adc to the dac
+LATENCY_STUDY = False
+
 ##############################
 #
 # Define new types of Nodes 
@@ -125,22 +128,24 @@ dac.addVariableArg("dsp_context");
 # Create a Graph object
 the_graph = Graph()
 
-# Connect the source to the processing node
-the_graph.connect(adc.o,f32_to_q15.i)
-the_graph.connect(f32_to_q15.o,dsp_filter.i)
+if LATENCY_STUDY:
+    the_graph.connect(adc.o,dac.i)
+    # This graph can be used to study the latency
+    # between the input / output of the system.
+    # It can be used with the square signal
+    # in the logic analyzer of uVision.
+    # The square signal is defined to change of value every
+    # 256 samples so corresponding to one audio buffer
+else:
+   # Connect the source to the processing node
+   the_graph.connect(adc.o,f32_to_q15.i)
+   the_graph.connect(f32_to_q15.o,dsp_filter.i)
+   
+   # Connect the processing node to the sink
+   the_graph.connect(dsp_filter.o,q15_to_f32.i)
+   the_graph.connect(q15_to_f32.o,dac.i)
 
-# Connect the processing node to the sink
-the_graph.connect(dsp_filter.o,q15_to_f32.i)
-the_graph.connect(q15_to_f32.o,dac.i)
 
-
-#the_graph.connect(adc.o,dac.i)
-# This graph can be used to study the latency
-# between the input / output of the system.
-# It can be used with the square signal
-# in the logic analyzer of uVision.
-# The square signal is defined to change of value every
-# 256 samples so corresponding to one audio buffer
 
 
 ##############################

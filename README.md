@@ -54,3 +54,19 @@ This latency can be analyzed by using a compute graph doing nothing (`adc` conne
 
 
 
+![latency](Documentation/latency.PNG)
+
+In the previous picture, one can see that the output signal is delayed from the input by 3 DSP packets.
+
+The `AUDIO_QUEUE_DEPTH` is 3 for this example.
+
+`AUDIO_QUEUE_DEPTH` must always be >= 2 because when the system starts you must be able to generate a packet although you have not received the first one needed to start the computation. A first dummy packet is used.
+
+Then, as soon as you have received the first DSP packet, the computation is starting but at same time the system is also starting to generate the second output packet.
+
+So, the first useful packet resulting from the computation is the 3rd packet generated on the output : a delay of 2 packets compared to the input.
+
+In case where the scheduling in calling the source or sink several time in sequence, you have additional latencies like in the example above where the total latency is not 2 but 3.
+
+
+
