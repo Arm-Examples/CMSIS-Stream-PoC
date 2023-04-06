@@ -5,6 +5,14 @@ extern "C" {
 #include "DSP_FIR.h"
 }
 
+/*
+
+Wrappers around the DSP_FIR.c implementations.
+Filter coefficients cannot be passed to those wrappers
+since they are hardcoded into DSP_FIR.c
+
+*/
+
 template<typename IN, int inputSize,
          typename OUT,int outputSize> 
 class FIR;

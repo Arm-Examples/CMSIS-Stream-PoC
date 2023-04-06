@@ -4,10 +4,27 @@
 #include "cg_status.h"
 #include "IIR.h"
 #include "FIR.h"
+#include "ConversionNodes.h"
+
+/*
+
+Nodes to interface the compute graph with the timer
+interrupt.
+
+Those nodes are flexible enough to handle the cases
+where the source or sink need to be scheduled
+several times
+(For instance, if one call to the source does not
+generate enough data for the following node).
+
+*/
+
 
 template<typename OUT,int outputSize>
 class ADC;
 
+// Time interrupt is only generating float
+// The template is specialized for float only
 template<int outputSize>
 class ADC<float32_t,outputSize>: 
  public GenericSource<float32_t,outputSize>
@@ -36,6 +53,7 @@ public:
         float32_t *received;
         float32_t *output=this->getWriteBuffer();
 
+        // Wait for a new buffer from the interrupt handler
         status = osMessageQueueGet(g_dsp_context.computeGraphInputQueue,
                 &received,
                 0,
@@ -46,8 +64,10 @@ public:
            return(CG_BUFFER_UNDERFLOW);
         }
 
+        // Copy the buffer to the compute graph
         memcpy(output,received,sizeof(float32_t)*outputSize);
 
+        // Free the received buffer from the memory pool
         status = osMemoryPoolFree(m_dsp_context->DSP_MemPool, received);     
         if (status != osOK) 
         {
@@ -64,6 +84,8 @@ protected:
 template<typename IN, int inputSize>
 class DAC;
 
+// The timer interrupt is only consuming float
+// so the template is specialized to float only
 template<int inputSize>
 class DAC<float32_t,inputSize>:
 public GenericSink<float32_t, inputSize>
@@ -94,14 +116,18 @@ public:
         float32_t *input=this->getReadBuffer();
         float32_t *sent;
 
+        // Get a new buffer from the memory pool
         sent = (float32_t*)osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);
         if (sent == NULL)
         {
            return(CG_MEMORY_ALLOCATION_FAILURE);
         }
 
+        // Copy the input of the node to the new buffer
         memcpy(sent,input,sizeof(float32_t)*inputSize);
 
+        // Put the buffer into the output queue
+        // for use by the timer interrupt handler
         status = osMessageQueuePut  ( g_dsp_context.computeGraphOutputQueue,
            &sent,
            0,
@@ -120,159 +146,5 @@ protected:
 
 };
 
-template<typename IN, int inputSize,
-         typename OUT,int outputSize> 
-class F32TOQ15;
 
-template<int inputSize>
-class F32TOQ15<float32_t,inputSize,
-               q15_t,inputSize>: 
-          public GenericNode<float32_t,inputSize,q15_t,inputSize>
-{
-public:
-    F32TOQ15(FIFOBase<float32_t> &src,FIFOBase<q15_t> &dst):
-    GenericNode<float32_t,inputSize,q15_t,inputSize>(src,dst)
-    {
-        
-    };
-
-    int prepareForRunning() final
-    {
-        if (this->willUnderflow() ||
-            this->willOverflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(CG_SUCCESS);
-    };
-
-    int run() final
-    {
-        float32_t *src=this->getReadBuffer();
-        q15_t *dst=this->getWriteBuffer();
-        arm_float_to_q15(src, dst, inputSize); 
-        return(CG_SUCCESS);
-    };
-
-
-
-};
-
-template<typename IN, int inputSize,
-         typename OUT,int outputSize> 
-class F32TOQ31;
-
-template<int inputSize>
-class F32TOQ31<float32_t,inputSize,
-               q31_t,inputSize>: 
-          public GenericNode<float32_t,inputSize,q31_t,inputSize>
-{
-public:
-    F32TOQ31(FIFOBase<float32_t> &src,FIFOBase<q31_t> &dst):
-    GenericNode<float32_t,inputSize,q31_t,inputSize>(src,dst)
-    {
-        
-    };
-
-    int prepareForRunning() final
-    {
-        if (this->willUnderflow() ||
-            this->willOverflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(CG_SUCCESS);
-    };
-
-    int run() final
-    {
-        float32_t *src=this->getReadBuffer();
-        q31_t *dst=this->getWriteBuffer();
-        arm_float_to_q31(src, dst, inputSize); 
-        return(CG_SUCCESS);
-    };
-
-
-
-};
-
-template<typename IN, int inputSize,
-         typename OUT,int outputSize> 
-class Q31TOF32;
-
-template<int inputSize>
-class Q31TOF32<q31_t,inputSize,
-               float32_t,inputSize>: 
-          public GenericNode<q31_t,inputSize,float32_t,inputSize>
-{
-public:
-    Q31TOF32(FIFOBase<q31_t> &src,FIFOBase<float32_t> &dst):
-    GenericNode<q31_t,inputSize,float32_t,inputSize>(src,dst)
-    {
-        
-    };
-
-    int prepareForRunning() final
-    {
-        if (this->willUnderflow() ||
-            this->willOverflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(CG_SUCCESS);
-    };
-
-    int run() final
-    {
-        q31_t *src=this->getReadBuffer();
-        float32_t *dst=this->getWriteBuffer();
-        arm_q31_to_float(src, dst, inputSize); 
-        return(CG_SUCCESS);
-    };
-
-
-
-};
-
-template<typename IN, int inputSize,
-         typename OUT,int outputSize> 
-class Q15TOF32;
-
-template<int inputSize>
-class Q15TOF32<q15_t,inputSize,
-               float32_t,inputSize>: 
-          public GenericNode<q15_t,inputSize,float32_t,inputSize>
-{
-public:
-    Q15TOF32(FIFOBase<q15_t> &src,FIFOBase<float32_t> &dst):
-    GenericNode<q15_t,inputSize,float32_t,inputSize>(src,dst)
-    {
-        
-    };
-
-    int prepareForRunning() final
-    {
-        if (this->willUnderflow() ||
-            this->willOverflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(CG_SUCCESS);
-    };
-
-    int run() final
-    {
-        q15_t *src=this->getReadBuffer();
-        float32_t *dst=this->getWriteBuffer();
-        arm_q15_to_float(src, dst, inputSize); 
-        return(CG_SUCCESS);
-    };
-
-
-
-};
 #endif

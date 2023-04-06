@@ -6,7 +6,10 @@ from cmsisdsp.cg.scheduler import *
 # Include definitions from the Python package
 from cmsisdsp.cg.scheduler import GenericNode,GenericSink,GenericSource
 
-### Define new types of Nodes 
+##############################
+#
+# Define new types of Nodes 
+#
 
 class F32TOQ15(GenericNode):
     def __init__(self,name,inLength):
@@ -86,6 +89,10 @@ class ADC(GenericSource):
     def typeName(self):
         return "ADC"
 
+##############################
+#
+# Description of the graph 
+#
 DSP_BLOCK_SIZE = 256
 FILTER_BLOCKSIZE = 192
 #FILTER_BLOCKSIZE = 256
@@ -106,7 +113,7 @@ adc=ADC("adc",DSP_BLOCK_SIZE)
 adc.addVariableArg("dsp_context");
 
 # Filter : can be FIR or IIR.
-# Warning, DSP_BLOCK_SIZE value used here must be consistent
+# Warning, FILTER_BLOCKSIZE value used here must be consistent
 # with the one used in C
 dsp_filter=IIR("iir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
 #dsp_filter=FIR("fir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
@@ -126,15 +133,21 @@ the_graph.connect(f32_to_q15.o,dsp_filter.i)
 the_graph.connect(dsp_filter.o,q15_to_f32.i)
 the_graph.connect(q15_to_f32.o,dac.i)
 
+
+#the_graph.connect(adc.o,dac.i)
 # This graph can be used to study the latency
 # between the input / output of the system.
 # It can be used with the square signal
 # in the logic analyzer of uVision.
 # The square signal is defined to change of value every
 # 256 samples so corresponding to one audio buffer
-#the_graph.connect(adc.o,dac.i)
 
 
+##############################
+#
+# Generation of the code and 
+# graphviz representation
+#
 print("Generate graphviz and code")
 
 conf=Configuration()

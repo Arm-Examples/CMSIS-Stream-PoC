@@ -3,9 +3,28 @@
 
 #include "cmsis_os2.h" 
 
+// DSP Block size
+// Size of blocks produced and consumed by the
+// time interrupt handler.
+// It must be consistent with the value defined in
+// graph.py
 #define DSP_BLOCKSIZE 256
 
+// Number of samples consumed by the other 
+// blocks in the graph and depth of the output queue
+// The blocksize must be consistent with the value defined
+// in graph.py
+// The queue depth must be consistent with the computed
+// schedule and the added latency
+#define AUDIO_QUEUE_DEPTH 3
+#define FILTER_BLOCKSIZE 192
+
 /*
+#define AUDIO_QUEUE_DEPTH 2
+#define FILTER_BLOCKSIZE 256
+*/
+
+/* EXPLANATION for AUDIO_QUEUE_DEPTH
 
 AUDIO_QUEUE_DEPTH is 1 + the number of sinks or sources in
 sequence in the scheduling.
@@ -48,11 +67,16 @@ So, a sink buffer must always be available. The output queue
 must be pre-loaded with some empty buffers.
 
 */
-#define AUDIO_QUEUE_DEPTH 3
-#define FILTER_BLOCKSIZE 192
 
-//#define AUDIO_QUEUE_DEPTH 2
-//#define FILTER_BLOCKSIZE 256
+/*
+TIMEOUT for the source node
+A new packet is received every 8 ms in 
+this example and OS ticks are every 1 ms
+
+10 ms timeout is chosen for the source
+A buffer underflow error will be generated in case
+of underflow
+*/
 
 #define CG_TIMEOUT 10
 
@@ -62,17 +86,18 @@ extern "C"
 {
 #endif
 
+// Datatype for an dsp packet
 typedef struct _DSP_DataType {
   float32_t     Sample[DSP_BLOCKSIZE];
 } DSP_DataType;
 
-
+// Data structure used to interface the timer interrupt
+// handler, the application and the compute graph source
+// and sink
 typedef struct _DSP_context {
 osMemoryPoolId_t  DSP_MemPool;
 osMessageQueueId_t computeGraphInputQueue;
 osMessageQueueId_t computeGraphOutputQueue;
-DSP_DataType      *pTimInputBuffer;
-DSP_DataType      *pTimOutputBuffer;
 int error;
 } dsp_context_t;
 

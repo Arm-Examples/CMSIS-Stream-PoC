@@ -31,9 +31,12 @@
 
 dsp_context_t g_dsp_context;
 
+// Working buffer for the timer interrupt handler
+static DSP_DataType      *pTimInputBuffer;
+static DSP_DataType      *pTimOutputBuffer;
 
-uint32_t          dataTimIrqOutIdx;
-uint32_t          dataTimIrqInIdx;
+static uint32_t          dataTimIrqOutIdx;
+static uint32_t          dataTimIrqInIdx;
                  
 /*----------------------------------------------------------------------------
    TimeStamp source for Event Recorder
@@ -52,7 +55,7 @@ uint32_t EventRecorderTimerGet (void) {
 /*----------------------------------------------------------------------------
    Thread IDs
  *----------------------------------------------------------------------------*/
-osThreadId_t tid_SigMod;           /* thread id of Signal Modify thread       */
+static osThreadId_t tid_SigMod;           /* thread id of Signal Modify thread       */
 
 static const osThreadAttr_t t_attr = 
   { NULL, osThreadDetached, NULL, 0U, NULL, 0U, osPriorityNormal, 0U, 0U};
@@ -96,14 +99,14 @@ void TIMER2_IRQHandler(void) {
       tmpFilterIn =  ((float32_t)((adGdr >> 4) & 0xFFF) / (0xFFF / 2)) - 1;
 
       tmp = tmpFilterIn;
-      g_dsp_context.pTimInputBuffer->Sample[dataTimIrqOutIdx++] = tmp;
+      pTimInputBuffer->Sample[dataTimIrqOutIdx++] = tmp;
 
       if (dataTimIrqOutIdx >= DSP_BLOCKSIZE) {
         
         // set buffer and event
         EventRecord2(1+EventLevelOp, 0, 0);
         status = osMessageQueuePut  ( g_dsp_context.computeGraphInputQueue,
-           &g_dsp_context.pTimInputBuffer,
+           &pTimInputBuffer,
            0,
            0);
 
@@ -114,8 +117,8 @@ void TIMER2_IRQHandler(void) {
         }
 
         // allocate next  buffer
-        g_dsp_context.pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);        
-        if (g_dsp_context.pTimInputBuffer == NULL) {
+        pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);        
+        if (pTimInputBuffer == NULL) {
           g_dsp_context.error = CG_MEMORY_ALLOCATION_FAILURE;
           return;
         }    
@@ -132,7 +135,7 @@ void TIMER2_IRQHandler(void) {
     if (dataTimIrqInIdx == 0) 
     {
       status = osMessageQueueGet  ( g_dsp_context.computeGraphOutputQueue,
-                &g_dsp_context.pTimOutputBuffer,
+                &pTimOutputBuffer,
                 0,
                 0) ;
       if (status != osOK)
@@ -141,10 +144,10 @@ void TIMER2_IRQHandler(void) {
         return;
       }
     }
-    if ((dataTimIrqInIdx > 0) || (g_dsp_context.pTimOutputBuffer != NULL)) {
+    if ((dataTimIrqInIdx > 0) || (pTimOutputBuffer != NULL)) {
 
 
-      tmp = g_dsp_context.pTimOutputBuffer->Sample[dataTimIrqInIdx++];
+      tmp = pTimOutputBuffer->Sample[dataTimIrqInIdx++];
       tmpFilterOut = tmp;
 
       /* move value in positive range and scale it.   (10bit DA = 0x3FF)
@@ -154,8 +157,8 @@ void TIMER2_IRQHandler(void) {
       if (dataTimIrqInIdx >= DSP_BLOCKSIZE) { 
         EventRecord2(2+EventLevelOp, 0, 0);
         // free input buffer       
-        status = osMemoryPoolFree(g_dsp_context.DSP_MemPool, g_dsp_context.pTimOutputBuffer);  
-        g_dsp_context.pTimOutputBuffer = NULL;
+        status = osMemoryPoolFree(g_dsp_context.DSP_MemPool, pTimOutputBuffer);  
+        pTimOutputBuffer = NULL;
         if (status != osOK) {
           g_dsp_context.error = CG_MEMORY_ALLOCATION_FAILURE;
           return;
@@ -209,8 +212,8 @@ void RTX_Features_Init (void) {
 
   tid_SigMod = osThreadNew(SigMod, NULL, &t_attr); /* start task Signal Modify */ 
   
-  g_dsp_context.pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
-  g_dsp_context.pTimOutputBuffer = NULL;
+  pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0); /* allocate memory       */
+  pTimOutputBuffer = NULL;
   
   g_dsp_context.computeGraphInputQueue = osMessageQueueNew (1,
         sizeof(DSP_DataType*),

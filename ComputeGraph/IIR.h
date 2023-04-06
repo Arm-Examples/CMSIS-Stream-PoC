@@ -5,6 +5,14 @@ extern "C" {
 #include "DSP_IIR.h"
 }
 
+/*
+
+Wrappers around the DSP_IIR.c implementations.
+Filter coefficients cannot be passed to those wrappers
+since they are hardcoded into DSP_IIR.c
+
+*/
+
 template<typename IN, int inputSize,
          typename OUT,int outputSize> 
 class IIR;
