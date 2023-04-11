@@ -146,5 +146,139 @@ protected:
 
 };
 
+template<typename IN, int inputSize> 
+class LogicAnalyzer;
+
+template<int inputSize>
+class LogicAnalyzer<q15_t,inputSize>: 
+public GenericSink<q15_t,inputSize>
+{
+public:
+    LogicAnalyzer(FIFOBase<q15_t> &src, float32_t *out):
+    GenericSink<q15_t,inputSize>(src),mOut(out)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        q15_t *src=this->getReadBuffer();
+
+        arm_q15_to_float(src,mOut,1);
+
+        return(CG_SUCCESS);
+    };
+
+protected:
+    float32_t *mOut;
+
+};
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize> 
+class Threshold;
+
+template<int inputSize>
+class Threshold<q15_t,inputSize,
+                q15_t,inputSize>: 
+          public GenericNode<q15_t,inputSize,
+                             q15_t,inputSize>
+{
+public:
+    Threshold(FIFOBase<q15_t> &src,
+              FIFOBase<q15_t> &dst,
+              int threshold):
+    GenericNode<q15_t,inputSize,
+                q15_t,inputSize>(src,dst),mThreshold(threshold)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        q15_t *src=this->getReadBuffer();
+        q15_t *dst=this->getWriteBuffer();
+
+        if (src[0] >= mThreshold)
+        {
+            dst[0] = 0x7FFF;
+        }
+        else
+        {
+            dst[0] = 0;
+        }
+        
+        return(CG_SUCCESS);
+    };
+
+protected:
+    int mThreshold;
+
+};
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize> 
+class RMS;
+
+template<int inputSize>
+class RMS<q15_t,inputSize,
+          q15_t,1>: 
+public GenericNode<q15_t,inputSize,
+                   q15_t,1>
+{
+public:
+    RMS(FIFOBase<q15_t> &src,
+        FIFOBase<q15_t> &dst):
+    GenericNode<q15_t,inputSize,
+                q15_t,1>(src,dst)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        q15_t *src=this->getReadBuffer();
+        q15_t *dst=this->getWriteBuffer();
+        q15_t mean;
+        
+        arm_mean_q15(src,inputSize,&mean);
+        mean = -mean;
+        arm_offset_q15(src,mean,src,inputSize);
+        arm_rms_q15(src,inputSize,dst);
+        
+        return(CG_SUCCESS);
+    };
+};
+
+
 
 #endif

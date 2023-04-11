@@ -2,6 +2,7 @@
 #define _GLOBAL_CG_SETTINGS_H_
 
 #include "cmsis_os2.h" 
+#include "EventRecorder.h"
 
 // DSP Block size
 // Size of blocks produced and consumed by the
@@ -85,6 +86,10 @@ of underflow
 extern "C"
 {
 #endif
+	
+/* Globals to interface with logic analyzer*/
+extern float32_t TOUT;
+extern float32_t EOUT;
 
 // Datatype for an dsp packet
 typedef struct _DSP_DataType {

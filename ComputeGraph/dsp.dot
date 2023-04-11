@@ -23,10 +23,42 @@ dac [label=<
   </TR>
 </TABLE>>];
 
+dup0 [shape=point,label=dup0]
+
+dup1 [shape=point,label=dup1]
+
+energy_log [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ALIGN="CENTER" PORT="i">energy_log<BR/>(LogicAnalyzer)</TD>
+  </TR>
+</TABLE>>];
+
 iir [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
     <TD ALIGN="CENTER" PORT="i">iir<BR/>(IIR)</TD>
+  </TR>
+</TABLE>>];
+
+rms [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ALIGN="CENTER" PORT="i">rms<BR/>(RMS)</TD>
+  </TR>
+</TABLE>>];
+
+threshold [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ALIGN="CENTER" PORT="i">threshold<BR/>(Threshold)</TD>
+  </TR>
+</TABLE>>];
+
+threshold_log [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ALIGN="CENTER" PORT="i">threshold_log<BR/>(LogicAnalyzer)</TD>
   </TR>
 </TABLE>>];
 
@@ -58,17 +90,53 @@ toQ15:i -> iir:i [label="q15(192)"
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
 </TD></TR></TABLE>>]
 
-iir:i -> toF32:i [label="q15(192)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
-</TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
-</TD></TR></TABLE>>]
-
 toF32:i -> dac:i [label="f32(384)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
 </TD></TR></TABLE>>]
+
+threshold:i -> threshold_log:i [label="q15(1)"
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+</TD></TR></TABLE>>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+</TD></TR></TABLE>>]
+
+iir:i ->  
+dup0 [label="q15(192)"
+
+,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
+</TD></TR></TABLE>>]
+
+ 
+dup0 -> toF32:i [label="q15(192)"
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >192</FONT>
+</TD></TR></TABLE>>
+]
+
+ 
+dup0 -> rms:i [label="q15(384)"
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >384</FONT>
+</TD></TR></TABLE>>
+]
+
+rms:i ->  
+dup1 [label="q15(1)"
+
+,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+</TD></TR></TABLE>>]
+
+ 
+dup1 -> threshold:i [label="q15(1)"
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+</TD></TR></TABLE>>
+]
+
+ 
+dup1 -> energy_log:i [label="q15(1)"
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+</TD></TR></TABLE>>
+]
 
 
 }

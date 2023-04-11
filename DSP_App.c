@@ -74,6 +74,8 @@ void errHandler (uint32_t errCode) {
 
 float32_t tmpFilterIn;             /* 'global'  to display in LogicAnalyzer   */
 float32_t tmpFilterOut;            /* 'global'  to display in LogicAnalyzer   */
+float32_t TOUT;
+float32_t EOUT;
 
 /*----------------------------------------------------------------------------
    TIM2 IRQ Handler
@@ -177,6 +179,15 @@ void TIMER2_IRQHandler(void) {
 void SigMod (void __attribute__((unused)) *arg) {
  
   int error;
+	int res;
+	
+	res = EventRecorderEnable (EventRecordAll, EvtSched, EvtSched);
+  if (!res)
+  {
+      printf("Error enabling event recorder for scheduler\n");
+      return;
+  }
+	 
   printf("Start compute graph\r\n");
   uint32_t nbIterations = dsp_scheduler(&error,&g_dsp_context);
 

@@ -15,6 +15,14 @@ extern "C"
 {
 #endif
 
+#include "EventRecorder.h"
+
+#define EvtSched 0x01 
+
+#define Evt_Scheduler   EventID (EventLevelAPI,   EvtSched, 0x00)
+#define Evt_Node        EventID (EventLevelAPI,   EvtSched, 0x01)
+#define Evt_Error       EventID (EventLevelError,   EvtSched, 0x02)
+
 
 extern uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context);
 

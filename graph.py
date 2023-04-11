@@ -92,13 +92,43 @@ class ADC(GenericSource):
     def typeName(self):
         return "ADC"
 
+class Threshold(GenericNode):
+    def __init__(self,name,theType):
+        GenericNode.__init__(self,name)
+        self.addInput("i",theType,1)
+        self.addOutput("o",theType,1)
+
+    @property
+    def typeName(self):
+        return "Threshold"
+
+class RMS(GenericNode):
+    def __init__(self,name,theType,inLength):
+        GenericNode.__init__(self,name)
+        self.addInput("i",theType,inLength)
+        self.addOutput("o",theType,1)
+
+    @property
+    def typeName(self):
+        return "RMS"
+
+class LogicAnalyzer(GenericSink):
+    def __init__(self,name,theType):
+        GenericSink.__init__(self,name)
+        self.addInput("i",theType,1)
+
+    @property
+    def typeName(self):
+        return "LogicAnalyzer"
+
+
 ##############################
 #
 # Description of the graph 
 #
 DSP_BLOCK_SIZE = 256
 FILTER_BLOCKSIZE = 192
-#FILTER_BLOCKSIZE = 256
+ENERGY_BLOCK_SIZE = 384
 
 # Define the datatype we are using for all the IOs in this
 # example
@@ -121,9 +151,22 @@ adc.addVariableArg("dsp_context");
 dsp_filter=IIR("iir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
 #dsp_filter=FIR("fir",sampleType,FILTER_BLOCKSIZE,FILTER_BLOCKSIZE)
 
+energy=RMS("rms",sampleType,ENERGY_BLOCK_SIZE)
+threshold=Threshold("threshold",sampleType)
+threshold.addLiteralArg(0x3600);
+
+energy_log = LogicAnalyzer("energy_log",sampleType)
+# Global variable traced by logic analyzer
+energy_log.addVariableArg("&EOUT");
+
+threshold_log = LogicAnalyzer("threshold_log",sampleType)
+# Global variable traced by logic analyzer
+threshold_log.addVariableArg("&TOUT");
+
 # DAC node consuming float data (format defined in TIMER2_IRQHandler)
 dac=DAC("dac",DSP_BLOCK_SIZE)
 dac.addVariableArg("dsp_context");
+
 
 # Create a Graph object
 the_graph = Graph()
@@ -145,8 +188,13 @@ else:
    the_graph.connect(dsp_filter.o,q15_to_f32.i)
    the_graph.connect(q15_to_f32.o,dac.i)
 
+   the_graph.connect(dsp_filter.o,energy.i)
+   the_graph.connect(energy.o,threshold.i)
+   the_graph.connect(threshold.o,threshold_log.i)
 
+   the_graph.connect(energy.o,energy_log.i)
 
+  
 
 ##############################
 #
@@ -167,8 +215,9 @@ conf.prefix="dsp_"
 # Name of scheduler function
 conf.schedName="dsp_scheduler"
 
-conf.eventRecorder=False
+conf.eventRecorder=True
 
+#conf.displayFIFOBuf = True
 
 sched = the_graph.computeSchedule(config=conf)
 
@@ -178,4 +227,4 @@ print("Memory usage %d bytes" % sched.memory)
 sched.ccode("ComputeGraph",conf)
 
 with open("ComputeGraph/dsp.dot","w") as f:
-    sched.graphviz(f)
+    sched.graphviz(f,config=conf)

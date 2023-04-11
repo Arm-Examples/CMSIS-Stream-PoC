@@ -22,6 +22,22 @@ The generated signal can be changed by using a toolbox window displayed in uVisi
 
 The filter will show an attenuation for some frequencies and not others.
 
+`EOUT` is the energy of the filtered signal (root mean square with DC offset removed).
+
+`TOUT` is the comparison with a threshold to detect the presence of a special frequency band in the signal.
+
+The nodes in the graph are:
+
+* `adc` : Get the input signal data from the timer interrupt
+* `toQ15` : Convert samples to `q15_t`
+* `iir` : The IIR filter (can be replaced by the FIR by changing `graph.py`)
+* `toF32` : convert sample to `float32_t`
+* `dac` : Generate the output signal for use in the timer interrupt
+* `rms` : Compute the root mean square on a window of sample. The DC offset is removed before the computation
+* `threshold` : Convert the value to a threshold. Return `0x7FFF` when input value `>=` to the threshold. Otherwise return 0
+* `energy_log` : Write to a global variable monitored by the logic analyzer
+* `threshold_log` : Write to a global variable monitored by the logic analyzer
+
 ## Changes compared to original version
 
 ### Filter nodes
