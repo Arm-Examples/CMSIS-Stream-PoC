@@ -78,9 +78,9 @@ CG_AFTER_INCLUDES
 Description of the scheduling. 
 
 */
-static unsigned int schedule[32]=
+static unsigned int schedule[28]=
 { 
-0,10,5,2,9,0,10,5,2,9,1,6,3,4,7,8,0,10,5,2,9,1,10,5,2,9,1,6,3,4,7,8,
+0,10,5,2,9,1,0,10,5,2,9,1,6,3,4,7,8,0,10,5,2,9,1,6,3,4,7,8,
 };
 
 CG_BEFORE_FIFO_BUFFERS
@@ -89,26 +89,26 @@ CG_BEFORE_FIFO_BUFFERS
 FIFO buffers
 
 ************/
-#define FIFOSIZE0 384
-#define FIFOSIZE1 192
-#define FIFOSIZE2 384
+#define FIFOSIZE0 256
+#define FIFOSIZE1 256
+#define FIFOSIZE2 256
 #define FIFOSIZE3 1
-#define FIFOSIZE4 192
-#define FIFOSIZE5 192
-#define FIFOSIZE6 384
+#define FIFOSIZE4 256
+#define FIFOSIZE5 256
+#define FIFOSIZE6 512
 #define FIFOSIZE7 1
 #define FIFOSIZE8 1
 #define FIFOSIZE9 1
 
-#define BUFFERSIZE1 384
+#define BUFFERSIZE1 256
 CG_BEFORE_BUFFER
 float32_t dsp_buf1[BUFFERSIZE1]={0};
 
-#define BUFFERSIZE2 192
+#define BUFFERSIZE2 256
 CG_BEFORE_BUFFER
 q15_t dsp_buf2[BUFFERSIZE2]={0};
 
-#define BUFFERSIZE3 384
+#define BUFFERSIZE3 256
 CG_BEFORE_BUFFER
 float32_t dsp_buf3[BUFFERSIZE3]={0};
 
@@ -116,15 +116,15 @@ float32_t dsp_buf3[BUFFERSIZE3]={0};
 CG_BEFORE_BUFFER
 q15_t dsp_buf4[BUFFERSIZE4]={0};
 
-#define BUFFERSIZE5 192
+#define BUFFERSIZE5 256
 CG_BEFORE_BUFFER
 q15_t dsp_buf5[BUFFERSIZE5]={0};
 
-#define BUFFERSIZE6 192
+#define BUFFERSIZE6 256
 CG_BEFORE_BUFFER
 q15_t dsp_buf6[BUFFERSIZE6]={0};
 
-#define BUFFERSIZE7 384
+#define BUFFERSIZE7 512
 CG_BEFORE_BUFFER
 q15_t dsp_buf7[BUFFERSIZE7]={0};
 
@@ -151,9 +151,9 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /*
     Create FIFOs objects
     */
-    FIFO<float32_t,FIFOSIZE0,0,0> fifo0(dsp_buf1);
+    FIFO<float32_t,FIFOSIZE0,1,0> fifo0(dsp_buf1);
     FIFO<q15_t,FIFOSIZE1,1,0> fifo1(dsp_buf2);
-    FIFO<float32_t,FIFOSIZE2,0,0> fifo2(dsp_buf3);
+    FIFO<float32_t,FIFOSIZE2,1,0> fifo2(dsp_buf3);
     FIFO<q15_t,FIFOSIZE3,1,0> fifo3(dsp_buf4);
     FIFO<q15_t,FIFOSIZE4,1,0> fifo4(dsp_buf5);
     FIFO<q15_t,FIFOSIZE5,1,0> fifo5(dsp_buf6);
@@ -168,15 +168,15 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     */
     ADC<float32_t,256> adc(fifo0,dsp_context);
     DAC<float32_t,256> dac(fifo2,dsp_context);
-    Duplicate2<q15_t,192,q15_t,192,q15_t,192> dup0(fifo4,fifo5,fifo6);
+    Duplicate2<q15_t,256,q15_t,256,q15_t,256> dup0(fifo4,fifo5,fifo6);
     Duplicate2<q15_t,1,q15_t,1,q15_t,1> dup1(fifo7,fifo8,fifo9);
     LogicAnalyzer<q15_t,1> energy_log(fifo9,&EOUT);
-    IIR<q15_t,192,q15_t,192> iir(fifo1,fifo4);
+    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4);
     RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7);
     Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13824);
     LogicAnalyzer<q15_t,1> threshold_log(fifo3,&TOUT);
-    Q15TOF32<q15_t,192,float32_t,192> toF32(fifo5,fifo2);
-    F32TOQ15<float32_t,192,q15_t,192> toQ15(fifo0,fifo1);
+    Q15TOF32<q15_t,256,float32_t,256> toF32(fifo5,fifo2);
+    F32TOQ15<float32_t,256,q15_t,256> toQ15(fifo0,fifo1);
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;
@@ -185,7 +185,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
         /* Run a schedule iteration */
         EventRecord2 (Evt_Scheduler, nbSchedule, 0);
         CG_BEFORE_ITERATION;
-        for(unsigned long id=0 ; id < 32; id++)
+        for(unsigned long id=0 ; id < 28; id++)
         {
             EventRecord2 (Evt_Node, schedule[id], 0);
             CG_BEFORE_NODE_EXECUTION;

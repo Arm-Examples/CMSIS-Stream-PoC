@@ -506,6 +506,11 @@
               <FileType>5</FileType>
               <FilePath>.\ComputeGraph\IIR.h</FilePath>
             </File>
+            <File>
+              <FileName>params.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\ComputeGraph\params.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

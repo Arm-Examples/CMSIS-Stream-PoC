@@ -4,26 +4,19 @@
 #include "cmsis_os2.h" 
 #include "EventRecorder.h"
 
-// DSP Block size
-// Size of blocks produced and consumed by the
-// time interrupt handler.
-// It must be consistent with the value defined in
-// graph.py
-#define DSP_BLOCKSIZE 256
+// Generated from Python to ensure the
+// settings are consistent between C and Python
+// The file contains:
+// DSP block size 
+//     Size of blocks produced and consumed by the
+//     timer interrupt handler.
+// Filter block size
+//     Size of blocks processed by the filter
+// Audio queue depth
+//      Additional output buffering because of latencies
+//      See below explanation
+#include "params.h"
 
-// Number of samples consumed by the other 
-// blocks in the graph and depth of the output queue
-// The blocksize must be consistent with the value defined
-// in graph.py
-// The queue depth must be consistent with the computed
-// schedule and the added latency
-#define AUDIO_QUEUE_DEPTH 3
-#define FILTER_BLOCKSIZE 192
-
-/*
-#define AUDIO_QUEUE_DEPTH 2
-#define FILTER_BLOCKSIZE 256
-*/
 
 /* EXPLANATION for AUDIO_QUEUE_DEPTH
 
@@ -60,13 +53,18 @@ to be consumed by the timer interrupt. We need a queue to hold
 those buffers since the interrupt handler will just process them
 one per one.
 
-Similarly, if 2 call to source are required, the interrupt 
-handler may be waiting for an output buffer because when it
-is producing the first buffer for the source, it is consuming
-a first buffer for a sink.
-So, a sink buffer must always be available. The output queue 
-must be pre-loaded with some empty buffers.
+Similarly, if 2 calls to source are required, the sink 
+will receive a useful buffer only after those 2 calls.
+But the timer interrupt is expecting an input / output buffer
+at each execution to maintain the realtime.
+So the timer interrupt must have some buffer to read 
+even if the sink has not yet been executed. The output queue
+connecting the sink to the timer interrupt must be pre-loaded
+with some buffers in advance.
 
+AUDI_QUEUE_DEPTH is controlling the length of the output queue
+connecting a sink to the timer interrupt. It is also controlling
+the number of buffers to pre-load in the queue.
 */
 
 /*
