@@ -150,6 +150,42 @@ template<typename IN, int inputSize>
 class LogicAnalyzer;
 
 template<int inputSize>
+class LogicAnalyzer<float32_t,inputSize>: 
+public GenericSink<float32_t,inputSize>
+{
+public:
+    LogicAnalyzer(FIFOBase<float32_t> &src, float32_t *out):
+    GenericSink<float32_t,inputSize>(src),mOut(out)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        float32_t *src=this->getReadBuffer();
+
+        mOut[0] = src[0];
+
+        return(CG_SUCCESS);
+    };
+
+protected:
+    float32_t *mOut;
+
+};
+
+
+
+template<int inputSize>
 class LogicAnalyzer<q15_t,inputSize>: 
 public GenericSink<q15_t,inputSize>
 {
@@ -188,6 +224,55 @@ template<typename IN, int inputSize,
 class Threshold;
 
 template<int inputSize>
+class Threshold<float32_t,inputSize,
+                float32_t,inputSize>: 
+          public GenericNode<float32_t,inputSize,
+                             float32_t,inputSize>
+{
+public:
+    Threshold(FIFOBase<float32_t> &src,
+              FIFOBase<float32_t> &dst,
+              float32_t threshold):
+    GenericNode<float32_t,inputSize,
+                float32_t,inputSize>(src,dst),mThreshold(threshold)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        float32_t *src=this->getReadBuffer();
+        float32_t *dst=this->getWriteBuffer();
+
+        if (src[0] >= mThreshold)
+        {
+            dst[0] = 1.0f;
+        }
+        else
+        {
+            dst[0] = 0.0f;
+        }
+        
+        return(CG_SUCCESS);
+    };
+
+protected:
+    float32_t mThreshold;
+
+};
+
+
+template<int inputSize>
 class Threshold<q15_t,inputSize,
                 q15_t,inputSize>: 
           public GenericNode<q15_t,inputSize,
@@ -196,7 +281,7 @@ class Threshold<q15_t,inputSize,
 public:
     Threshold(FIFOBase<q15_t> &src,
               FIFOBase<q15_t> &dst,
-              int threshold):
+              q15_t threshold):
     GenericNode<q15_t,inputSize,
                 q15_t,inputSize>(src,dst),mThreshold(threshold)
     {
@@ -231,13 +316,53 @@ public:
     };
 
 protected:
-    int mThreshold;
+    q15_t mThreshold;
 
 };
 
 template<typename IN, int inputSize,
          typename OUT,int outputSize> 
 class RMS;
+
+template<int inputSize>
+class RMS<float32_t,inputSize,
+          float32_t,1>: 
+public GenericNode<float32_t,inputSize,
+                   float32_t,1>
+{
+public:
+    RMS(FIFOBase<float32_t> &src,
+        FIFOBase<float32_t> &dst):
+    GenericNode<float32_t,inputSize,
+                float32_t,1>(src,dst)
+    {
+    };
+
+    int prepareForRunning() final
+    {
+        if (this->willUnderflow() ||
+            this->willOverflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(CG_SUCCESS);
+    };
+
+    int run() final
+    {
+        float32_t *src=this->getReadBuffer();
+        float32_t *dst=this->getWriteBuffer();
+        float32_t mean;
+        
+        arm_mean_f32(src,inputSize,&mean);
+        mean = -mean;
+        arm_offset_f32(src,mean,src,inputSize);
+        arm_rms_f32(src,inputSize,dst);
+        
+        return(CG_SUCCESS);
+    };
+};
 
 template<int inputSize>
 class RMS<q15_t,inputSize,

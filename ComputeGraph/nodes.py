@@ -1,5 +1,6 @@
 from cmsisdsp.cg.scheduler import *
 from cmsisdsp.cg.scheduler import GenericNode,GenericSink,GenericSource
+import cmsisdsp.fixedpoint as fixed 
 
 ##############################
 #
@@ -104,7 +105,16 @@ class Threshold(GenericNode):
         if isinstance(threshold_value, str):
            self.addVariableArg(threshold_value)
         else:
-           self.addLiteralArg(threshold_value)
+           if theType.ctype == "float32_t":
+              t = threshold_value
+
+           if theType.ctype == "q31_t":
+              t = fixed.toQ31(threshold_value)
+
+           if theType.ctype == "q15_t":
+              t = fixed.toQ15(threshold_value)
+
+           self.addLiteralArg(t)
 
 
     @property

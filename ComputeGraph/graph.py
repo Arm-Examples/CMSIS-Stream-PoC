@@ -7,7 +7,13 @@ from cmsisdsp.cg.scheduler import *
 from nodes import *
 from params import * 
 
+import argparse
 
+parser = argparse.ArgumentParser(description='Options for graph generation')
+parser.add_argument('--fir', action='store_true', help="FIR mode (default IIR)")
+parser.add_argument('--f32', action='store_true', help="F32 mode (default Q15)")
+
+args = parser.parse_args()
 
 ##############################
 #
@@ -27,11 +33,19 @@ write_c_params(dsp_blocksize=DSP_BLOCK_SIZE,
 # example
 # The DAC / ADC are using float so conversions nodes
 # have to be added to the graph when needed
-sampleType=CType(Q15)
+if args.f32:
+   sampleType=CType(F32)
+else:
+   sampleType=CType(Q15)
 
 # Convertion nodes since graph is in Q15
-f32_to_q15=F32TOQ15("toQ15",FILTER_BLOCKSIZE)
-q15_to_f32=Q15TOF32("toF32",FILTER_BLOCKSIZE)
+if sampleType.ctype == "q15_t":
+   to_fixed=F32TOQ15("toFixedPoint",FILTER_BLOCKSIZE)
+   to_float=Q15TOF32("toFloat",FILTER_BLOCKSIZE)
+
+if sampleType.ctype == "q31_t":
+   to_fixed=F32TOQ31("toFixedPoint",FILTER_BLOCKSIZE)
+   to_float=Q31TOF32("toFloat",FILTER_BLOCKSIZE)
 
 # The ADC node generating float data 
 # (format defined in TIMER2_IRQHandler)
@@ -41,12 +55,15 @@ adc=ADC("adc",DSP_BLOCK_SIZE,
 # Filter : can be FIR or IIR.
 # Warning, FILTER_BLOCKSIZE value used here must be consistent
 # with the one used in C
-dsp_filter=IIR("iir",sampleType,FILTER_BLOCKSIZE)
-#dsp_filter=FIR("fir",sampleType,FILTER_BLOCKSIZE)
+if args.fir:
+   dsp_filter=FIR("fir",sampleType,FILTER_BLOCKSIZE)
+else:
+   dsp_filter=IIR("iir",sampleType,FILTER_BLOCKSIZE)
+
 
 energy=RMS("rms",sampleType,ENERGY_BLOCK_SIZE)
 threshold=Threshold("threshold",sampleType,
-                    threshold_value=0x3600)
+                    threshold_value=0.42)
 
 energy_log = LogicAnalyzer("energy_log",sampleType,
                            c_global_variable="EOUT")
@@ -65,12 +82,18 @@ the_graph = Graph()
 
 
 # Connect the source to the processing node
-the_graph.connect(adc.o,f32_to_q15.i)
-the_graph.connect(f32_to_q15.o,dsp_filter.i)
+if sampleType.ctype != "float32_t":
+   the_graph.connect(adc.o,to_fixed.i)
+   the_graph.connect(to_fixed.o,dsp_filter.i)
+else:
+   the_graph.connect(adc.o,dsp_filter.i) 
    
 # Connect the processing node to the sink
-the_graph.connect(dsp_filter.o,q15_to_f32.i)
-the_graph.connect(q15_to_f32.o,dac.i)
+if sampleType.ctype != "float32_t":
+   the_graph.connect(dsp_filter.o,to_float.i)
+   the_graph.connect(to_float.o,dac.i)
+else:
+   the_graph.connect(dsp_filter.o,dac.i)
 
 the_graph.connect(dsp_filter.o,energy.i)
 the_graph.connect(energy.o,threshold.i)

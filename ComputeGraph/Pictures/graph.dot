@@ -34,10 +34,10 @@ energy_log [label=<
   </TR>
 </TABLE>>];
 
-iir [label=<
+fir [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">iir<BR/>(IIR)</TD>
+    <TD ALIGN="CENTER" PORT="i">fir<BR/>(FIR)</TD>
   </TR>
 </TABLE>>];
 
@@ -62,35 +62,35 @@ threshold_log [label=<
   </TR>
 </TABLE>>];
 
-toF32 [label=<
+toFixedPoint [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toF32<BR/>(Q15TOF32)</TD>
+    <TD ALIGN="CENTER" PORT="i">toFixedPoint<BR/>(F32TOQ15)</TD>
   </TR>
 </TABLE>>];
 
-toQ15 [label=<
+toFloat [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toQ15<BR/>(F32TOQ15)</TD>
+    <TD ALIGN="CENTER" PORT="i">toFloat<BR/>(Q15TOF32)</TD>
   </TR>
 </TABLE>>];
 
 
 
-adc:i -> toQ15:i [label="f32(256)"
+adc:i -> toFixedPoint:i [label="f32(256)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-toQ15:i -> iir:i [label="q15(256)"
+toFixedPoint:i -> fir:i [label="q15(256)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-toF32:i -> dac:i [label="f32(256)"
+toFloat:i -> dac:i [label="f32(256)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
@@ -102,14 +102,14 @@ threshold:i -> threshold_log:i [label="q15(1)"
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>]
 
-iir:i ->  
+fir:i ->  
 dup0 [label="q15(256)"
 
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
  
-dup0 -> toF32:i [label="q15(256)"
+dup0 -> toFloat:i [label="q15(256)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ]
