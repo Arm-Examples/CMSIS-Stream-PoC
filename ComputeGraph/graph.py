@@ -39,13 +39,8 @@ else:
    sampleType=CType(Q15)
 
 # Convertion nodes since graph is in Q15
-if sampleType.ctype == "q15_t":
-   to_fixed=F32TOQ15("toFixedPoint",FILTER_BLOCKSIZE)
-   to_float=Q15TOF32("toFloat",FILTER_BLOCKSIZE)
-
-if sampleType.ctype == "q31_t":
-   to_fixed=F32TOQ31("toFixedPoint",FILTER_BLOCKSIZE)
-   to_float=Q31TOF32("toFloat",FILTER_BLOCKSIZE)
+to_fixed=ToFixedPoint("toFixedPoint",sampleType,FILTER_BLOCKSIZE)
+to_float=ToFloat("toFloat",sampleType,FILTER_BLOCKSIZE)
 
 # The ADC node generating float data 
 # (format defined in TIMER2_IRQHandler)

@@ -8,48 +8,27 @@ import cmsisdsp.fixedpoint as fixed
 #
 
 # Converting a block of F32 samples to Q15
-class F32TOQ15(GenericNode):
-    def __init__(self,name,ioLength):
+class ToFixedPoint(GenericNode):
+    def __init__(self,name,outputType,ioLength):
         GenericNode.__init__(self,name)
         self.addInput("i",CType(F32),ioLength)
-        self.addOutput("o",CType(Q15),ioLength)
+        self.addOutput("o",outputType,ioLength)
 
     @property
     def typeName(self):
-        return "F32TOQ15"
+        return "ToFixedPoint"
 
-# Converting a block of F32 samples to Q31
-class F32TOQ31(GenericNode):
-    def __init__(self,name,ioLength):
-        GenericNode.__init__(self,name)
-        self.addInput("i",CType(F32),ioLength)
-        self.addOutput("o",CType(Q31),ioLength)
-
-    @property
-    def typeName(self):
-        return "F32TOQ31"
 
 # Converting a block of Q15 samples to F32
-class Q15TOF32(GenericNode):
-    def __init__(self,name,ioLength):
+class ToFloat(GenericNode):
+    def __init__(self,name,inputType,ioLength):
         GenericNode.__init__(self,name)
-        self.addInput("i",CType(Q15),ioLength)
+        self.addInput("i",inputType,ioLength)
         self.addOutput("o",CType(F32),ioLength)
 
     @property
     def typeName(self):
-        return "Q15TOF32"
-
-# Converting a block of Q31 samples to F32
-class Q31TOF32(GenericNode):
-    def __init__(self,name,ioLength):
-        GenericNode.__init__(self,name)
-        self.addInput("i",CType(Q31),ioLength)
-        self.addOutput("o",CType(F32),ioLength)
-
-    @property
-    def typeName(self):
-        return "Q31TOF32"
+        return "ToFloat"
 
 # IIR node
 class IIR(GenericNode):

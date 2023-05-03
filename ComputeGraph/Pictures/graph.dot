@@ -34,10 +34,10 @@ energy_log [label=<
   </TR>
 </TABLE>>];
 
-fir [label=<
+iir [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">fir<BR/>(FIR)</TD>
+    <TD ALIGN="CENTER" PORT="i">iir<BR/>(IIR)</TD>
   </TR>
 </TABLE>>];
 
@@ -65,14 +65,14 @@ threshold_log [label=<
 toFixedPoint [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toFixedPoint<BR/>(F32TOQ15)</TD>
+    <TD ALIGN="CENTER" PORT="i">toFixedPoint<BR/>(ToFixedPoint)</TD>
   </TR>
 </TABLE>>];
 
 toFloat [label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toFloat<BR/>(Q15TOF32)</TD>
+    <TD ALIGN="CENTER" PORT="i">toFloat<BR/>(ToFloat)</TD>
   </TR>
 </TABLE>>];
 
@@ -84,7 +84,7 @@ adc:i -> toFixedPoint:i [label="f32(256)"
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-toFixedPoint:i -> fir:i [label="q15(256)"
+toFixedPoint:i -> iir:i [label="q15(256)"
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
@@ -102,7 +102,7 @@ threshold:i -> threshold_log:i [label="q15(1)"
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>]
 
-fir:i ->  
+iir:i ->  
 dup0 [label="q15(256)"
 
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>

@@ -171,12 +171,12 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     Duplicate2<q15_t,256,q15_t,256,q15_t,256> dup0(fifo4,fifo5,fifo6);
     Duplicate2<q15_t,1,q15_t,1,q15_t,1> dup1(fifo7,fifo8,fifo9);
     LogicAnalyzer<q15_t,1> energy_log(fifo9,&EOUT);
-    FIR<q15_t,256,q15_t,256> fir(fifo1,fifo4);
+    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4);
     RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7);
     Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13763);
     LogicAnalyzer<q15_t,1> threshold_log(fifo3,&TOUT);
-    F32TOQ15<float32_t,256,q15_t,256> toFixedPoint(fifo0,fifo1);
-    Q15TOF32<q15_t,256,float32_t,256> toFloat(fifo5,fifo2);
+    ToFixedPoint<float32_t,256,q15_t,256> toFixedPoint(fifo0,fifo1);
+    ToFloat<q15_t,256,float32_t,256> toFloat(fifo5,fifo2);
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;
@@ -224,7 +224,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
 
                 case 5:
                 {
-                   cgStaticError = fir.run();
+                   cgStaticError = iir.run();
                 }
                 break;
 
