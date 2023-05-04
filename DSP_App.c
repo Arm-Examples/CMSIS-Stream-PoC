@@ -97,7 +97,7 @@ void TIMER2_IRQHandler(void) {
 
       if (dataTimIrqOutIdx >= DSP_BLOCKSIZE) {
         
-        // set buffer and event
+        // push new filled buffer to compute graph input queue
         EventRecord2(1+EventLevelOp, 0, 0);
         status = osMessageQueuePut  ( g_dsp_context.computeGraphInputQueue,
            &pTimInputBuffer,
@@ -110,7 +110,7 @@ void TIMER2_IRQHandler(void) {
           return;
         }
 
-        // allocate next  buffer
+        // allocate next buffer for receiving new samples
         pTimInputBuffer = osMemoryPoolAlloc(g_dsp_context.DSP_MemPool, 0);        
         if (pTimInputBuffer == NULL) {
           g_dsp_context.error = CG_MEMORY_ALLOCATION_FAILURE;
@@ -128,6 +128,7 @@ void TIMER2_IRQHandler(void) {
     /* -- signal Output Section ------------------------------------------------ */
     if (dataTimIrqInIdx == 0) 
     {
+      // Get a new buffer from the compute graph output queue
       status = osMessageQueueGet  ( g_dsp_context.computeGraphOutputQueue,
                 &pTimOutputBuffer,
                 0,
@@ -138,6 +139,8 @@ void TIMER2_IRQHandler(void) {
         return;
       }
     }
+    // If there are remaining samples in the buffer, read a new
+    // one and send it to the D/A
     if ((dataTimIrqInIdx > 0) || (pTimOutputBuffer != NULL)) {
 
 
@@ -148,6 +151,8 @@ void TIMER2_IRQHandler(void) {
          filter OUT range is -1.0 < value < 1.0                */
       LPC_DAC->DACR = (((uint32_t)((tmpFilterOut + 1) * (0x03FF / 2))) & 0x03FF) <<  6;
 
+      // If all the buffer has been sent, free the buffer
+      // from the memory pool
       if (dataTimIrqInIdx >= DSP_BLOCKSIZE) { 
         EventRecord2(2+EventLevelOp, 0, 0);
         // free input buffer       
@@ -210,7 +215,7 @@ void RTX_Features_Init (void) {
   Input queue : 1
 
   Input and output buffers being worked on in the
-  interrupt handler (but not yet in the queue)
+  interrupt handler (but not yet in the queue) 2
 
   Total : 2 + 1 + AUDIO_QUEUE_DEPTH buffers
 
