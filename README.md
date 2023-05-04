@@ -1,6 +1,6 @@
-# README
+# CMSIS-Stream-PoC
 
-[TOC]
+This is an example project showing the usage of the CMSIS-Stream software component.
 
 # Introduction
 
