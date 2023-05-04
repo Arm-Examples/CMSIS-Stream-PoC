@@ -1,14 +1,38 @@
 # README
 
-**Work in progress.**
+[TOC]
 
-## Introduction
+# Introduction
 
-It is the original uVision `DSP_App` demo converted to CMSIS-DSP Compute Graph.
+## The DSP compute graph
+
+It is the original uVision `DSP_App` demo converted to [CMSIS-DSP Compute Graph](https://github.com/ARM-software/CMSIS-DSP/tree/main/ComputeGraph).
 
 The implemented graph is:
 
-![dsp](ComputeGraph/dsp.png)
+![graph](ComputeGraph/Pictures/graph.png)
+
+The filter will show an attenuation for some frequencies and not others.
+
+`EOUT` is the amplitude of the filtered signal (root mean square with DC offset removed).
+
+`TOUT` is the comparison with a threshold to detect the presence of a specific frequency band in the signal.
+
+The nodes in the graph are:
+
+* `adc` : Get the input signal data from the timer interrupt
+* `toFixedPoint` : Convert samples to `q15_t`
+* `iir` : The IIR filter (can be replaced by the FIR by changing `graph.py`)
+* `toFloat` : convert sample to `float32_t`
+* `dac` : Generate the output signal for use in the timer interrupt
+* `rms` : Compute the root mean square on a window of sample. The DC offset is removed before the computation
+* `threshold` : Compare the value with a threshold. Return `0x7FFF` when input value `>=` to the threshold. Otherwise return `0`.
+* `amplitude_log` : Write to a global variable monitored by the logic analyzer
+* `threshold_log` : Write to a global variable monitored by the logic analyzer
+
+## Running the application
+
+### LogicAnalyzer
 
 When the application is running in uVision, you should see:
 
@@ -18,25 +42,22 @@ When the application is running in uVision, you should see:
 
 
 
-The generated signal can be changed by using a toolbox window displayed in uVision.
+The generated signal can be changed by using a toolbox window displayed in uVision:
 
-The filter will show an attenuation for some frequencies and not others.
+![toolbox](Documentation/toolbox.PNG)
 
-`EOUT` is the energy of the filtered signal (root mean square with DC offset removed).
+### EventRecorder
 
-`TOUT` is the comparison with a threshold to detect the presence of a specific frequency band in the signal.
+The event recorder window displays Compute graph events and timer events:
 
-The nodes in the graph are:
+* Start of a new schedule iteration
+* Execution of a compute graph node
+* AD conversion in timer interrupt
+* DA conversion in timer interrupt
 
-* `adc` : Get the input signal data from the timer interrupt
-* `toQ15` : Convert samples to `q15_t`
-* `iir` : The IIR filter (can be replaced by the FIR by changing `graph.py`)
-* `toF32` : convert sample to `float32_t`
-* `dac` : Generate the output signal for use in the timer interrupt
-* `rms` : Compute the root mean square on a window of sample. The DC offset is removed before the computation
-* `threshold` : Compare the value with a threshold. Return `0x7FFF` when input value `>=` to the threshold. Otherwise return `0`.
-* `energy_log` : Write to a global variable monitored by the logic analyzer
-* `threshold_log` : Write to a global variable monitored by the logic analyzer
+This trace can be used to track real-time issues. 
+
+![EventRecorder](Documentation/EventRecorder.PNG)
 
 ## Changes compared to original version
 
@@ -60,13 +81,17 @@ Same to switch between IIR or FIR : the graph needs to be regenerated.
 
 ### DSP block lengths
 
-The original version is using 256 samples for all the blocks. Here, to demonstrate the flexibility introduced with the compute graph, all the blocks (except sink / source) are using 192 samples.
+The original version is using 256 samples for all the blocks. To demonstrate the flexibility introduced with the compute graph, there is a different graph where all blocks (except sink / source) are using 192 samples. (graph described with the script `graph_with_higher_latency.py`)
+
+![graph_with_higher_latency](ComputeGraph/Pictures/graph_with_higher_latency.png)
 
 It introduces an additional latency in the system since sometime the scheduling is requiring 2 calls to the source or 2 calls to the sink.
 
 This is handled thanks to the `ADC` / `DAC` nodes that are connected to the interrupt handler through queues. The depth of the queue is controlled by `AUDIO_QUEUE_DEPTH` in the file `globalCGSettings.h`. This value must be coherent with the generated scheduling to avoid overflow or underflow in the sources / sinks.
 
 This latency can be analyzed by using a compute graph doing nothing (`adc` connected directly to the `dac`) and using the square signal generator in the toolbox.
+
+![graph_latency_study](ComputeGraph/Pictures/graph_latency_study.png)
 
 
 
@@ -84,5 +109,49 @@ So, the first useful packet resulting from the computation is the 3rd packet gen
 
 In case where the scheduling in calling the source or sink several time in sequence, you have additional latencies like in the example above where the total latency is not 2 but 3.
 
+# Python scripts
 
+## Plotting filter transfer function
+
+In below plots, the gray area represents the frequencies covered by the sweep sine and the red vertical line representes the middle of this area.
+
+`python iir_filter_design.py -p`
+
+![iir_plot](Documentation/iir_plot.png)
+
+`python fir_filter_design.py -p`
+
+![fir_plot](Documentation/fir_plot.png)
+
+## Generating filter coefficients
+
+`python iir_filter_design.py` creates `DSP_IIR.c`
+
+`python fir_filter_design.py` creates `DSP_FIR.c`
+
+# Generating graphs
+
+From the `ComputeGraph` folder do:
+
+`python graph.py` to generate the simpler DSP graph with minimum latency
+
+`python graph_with_higher_latency.py` to generate a graph with higher latency
+
+`python graph_latency_study.py` to generate a graph to study the latency
+
+Above commands are generating `ComputeGraph/dsp_scheduler.cpp` and also a graphviz file for graphical representation:
+
+* `ComputeGraph/Pictures/graph.dot`
+* `ComputeGraph/Pictures/graph_with_higher_latency.dot`
+* `ComputeGraph/Pictures/graph_latency_study.dot`
+
+A `dot` file can be converted to a `png` using the graphviz command `dot`:
+
+`dot -Tpng -o Pictures\graph.png Pictures\graph.dot`
+
+The python scripts can take some options:
+
+`python graph.py --fir` to use a FIR instead of IIR
+
+`python graph.py --f32` to use `float` instead of `q15_t` for the processing.
 
