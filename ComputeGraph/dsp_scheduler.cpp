@@ -80,7 +80,7 @@ Description of the scheduling.
 */
 static unsigned int schedule[28]=
 { 
-0,9,5,2,10,1,0,9,5,2,10,1,6,3,4,7,8,0,9,5,2,10,1,6,3,4,7,8,
+0,9,5,3,10,2,0,9,5,3,10,2,6,4,1,7,8,0,9,5,3,10,2,6,4,1,7,8,
 };
 
 CG_BEFORE_FIFO_BUFFERS
@@ -167,10 +167,10 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     Create node objects
     */
     ADC<float32_t,256> adc(fifo0,dsp_context);
+    LogicAnalyzer<q15_t,1> amplitude_log(fifo9,&EOUT);
     DAC<float32_t,256> dac(fifo2,dsp_context);
     Duplicate2<q15_t,256,q15_t,256,q15_t,256> dup0(fifo4,fifo5,fifo6);
     Duplicate2<q15_t,1,q15_t,1,q15_t,1> dup1(fifo7,fifo8,fifo9);
-    LogicAnalyzer<q15_t,1> energy_log(fifo9,&EOUT);
     IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4);
     RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7);
     Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13763);
@@ -200,25 +200,25 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
 
                 case 1:
                 {
-                   cgStaticError = dac.run();
+                   cgStaticError = amplitude_log.run();
                 }
                 break;
 
                 case 2:
                 {
-                   cgStaticError = dup0.run();
+                   cgStaticError = dac.run();
                 }
                 break;
 
                 case 3:
                 {
-                   cgStaticError = dup1.run();
+                   cgStaticError = dup0.run();
                 }
                 break;
 
                 case 4:
                 {
-                   cgStaticError = energy_log.run();
+                   cgStaticError = dup1.run();
                 }
                 break;
 

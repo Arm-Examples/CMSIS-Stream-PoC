@@ -58,7 +58,7 @@ energy=RMS("rms",sampleType,ENERGY_BLOCK_SIZE)
 threshold=Threshold("threshold",sampleType,
                     threshold_value=0x3600)
 
-energy_log = LogicAnalyzer("energy_log",sampleType,
+amplitude_log = LogicAnalyzer("amplitude_log",sampleType,
                            c_global_variable="EOUT")
 
 threshold_log = LogicAnalyzer("threshold_log",sampleType,
@@ -92,7 +92,7 @@ the_graph.connect(dsp_filter.o,energy.i)
 the_graph.connect(energy.o,threshold.i)
 the_graph.connect(threshold.o,threshold_log.i)
 
-the_graph.connect(energy.o,energy_log.i)
+the_graph.connect(energy.o,amplitude_log.i)
 
   
 ##############################

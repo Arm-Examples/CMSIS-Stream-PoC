@@ -3,6 +3,8 @@ from scipy import signal
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import argparse
+    
+import matplotlib.patches as mpatches
 
 parser = argparse.ArgumentParser(description='Generate IIR coefficients')
 parser.add_argument('-p', action='store_true', help="Plot transfer function")
@@ -208,14 +210,21 @@ if args.p:
    ax1.set_ylim([-120, 20])
 
    # Draw axis for frequency in the middle of the sine sweep
-   x = 2.0*np.pi * sweep_middle / sampling_frequency
-   ax1.axvline(x , color = 'r')
+   xavg = 2.0*np.pi * sweep_middle / sampling_frequency
+   ax1.axvline(xavg , color = 'r')
 
-   x = 2.0*np.pi * sweep_low / sampling_frequency
-   ax1.axvline(x , color = 'y')
+   xmin = 2.0*np.pi * sweep_low / sampling_frequency
+   ax1.axvline(xmin , color = 'y')
 
-   x = 2.0*np.pi * sweep_high / sampling_frequency
-   ax1.axvline(x , color = 'y')
+   xmax = 2.0*np.pi * sweep_high / sampling_frequency
+   ax1.axvline(xmax , color = 'y')
+
+
+   rect=mpatches.Rectangle((xmin,-120),(xmax-xmin),140, 
+                        fill = True,
+                        color = "lightgray",
+                        linewidth = 1)
+   ax1.add_patch(rect)
    
    
 

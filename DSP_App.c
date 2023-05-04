@@ -38,19 +38,6 @@ static DSP_DataType      *pTimOutputBuffer;
 static uint32_t          dataTimIrqOutIdx;
 static uint32_t          dataTimIrqInIdx;
                  
-/*----------------------------------------------------------------------------
-   TimeStamp source for Event Recorder
- *----------------------------------------------------------------------------*/
-static uint32_t TimeStamp;
-
-uint32_t EventRecorderTimerInit (void) {
-  TimeStamp = 0U;
-  return 0U;
-}
- 
-uint32_t EventRecorderTimerGet (void) {
-  return (TimeStamp++);
-}
 
 /*----------------------------------------------------------------------------
    Thread IDs
@@ -76,6 +63,11 @@ float32_t tmpFilterIn;             /* 'global'  to display in LogicAnalyzer   */
 float32_t tmpFilterOut;            /* 'global'  to display in LogicAnalyzer   */
 float32_t TOUT;
 float32_t EOUT;
+
+/* Event definitions for timer events in event recorder */
+#define EvtTimer 0
+#define Evt_AD   EventID (EventLevelOp,   EvtTimer, 0x01)
+#define Evt_DA   EventID (EventLevelOp,   EvtTimer, 0x02)
 
 /*----------------------------------------------------------------------------
    TIM2 IRQ Handler
@@ -181,10 +173,18 @@ void SigMod (void __attribute__((unused)) *arg) {
   int error;
 	int res;
 	
-	res = EventRecorderEnable (EventRecordAll, EvtSched, EvtSched);
+  /* Enable events for Compute Graph and timer */
+	res = EventRecorderEnable (EventRecordAll,EvtSched,EvtSched);
   if (!res)
   {
       printf("Error enabling event recorder for scheduler\n");
+      return;
+  }
+
+  res = EventRecorderEnable (EventRecordAll,EvtTimer,EvtTimer);
+  if (!res)
+  {
+      printf("Error enabling event recorder for timer\n");
       return;
   }
 	 
