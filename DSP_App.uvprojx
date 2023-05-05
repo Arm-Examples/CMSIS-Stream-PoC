@@ -341,7 +341,7 @@
               <MiscControls>-g</MiscControls>
               <Define>ARM_MATH_CM3 __Q15</Define>
               <Undefine></Undefine>
-              <IncludePath>.\ComputeGraph;..\DSP_app</IncludePath>
+              <IncludePath>.\ComputeGraph;..\CMSIS-Stream-PoC</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
