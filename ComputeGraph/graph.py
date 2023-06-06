@@ -1,7 +1,7 @@
 # Include definitions from the Python package to
 # define datatype for the IOs and to have access to the
 # Graph class
-from cmsisdsp.cg.scheduler import *
+from cmsis_stream.cg.scheduler import *
 
 # Import definitions used to describe the graph
 from nodes import *
@@ -119,6 +119,7 @@ conf.schedulerCFileName="dsp_scheduler"
 conf.prefix="dsp_"
 # Name of scheduler function
 conf.schedName="dsp_scheduler"
+conf.CMSISDSP = True
 
 # Enable event recorder tracing in the scheduler
 conf.eventRecorder=True
@@ -132,6 +133,13 @@ print("Schedule length = %d" % sched.scheduleLength)
 print("Memory usage %d bytes" % sched.memory)
 
 sched.ccode(".",conf)
+
+# GenericNodes.h is created in the folder "generated"
+generateGenericNodes(".")
+
+# cg_status.h is created in the folder "generated"
+generateCGStatus(".")
+
 
 with open("Pictures/graph.dot","w") as f:
     sched.graphviz(f,config=conf)

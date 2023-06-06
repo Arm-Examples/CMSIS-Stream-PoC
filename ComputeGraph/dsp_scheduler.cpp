@@ -11,6 +11,7 @@ The support classes and code is covered by CMSIS-DSP license.
 #include "arm_math.h"
 #include "globalCGSettings.h"
 #include "GenericNodes.h"
+#include "cg_status.h"
 #include "DspNodes.h"
 #include "dsp_scheduler.h"
 
@@ -102,7 +103,7 @@ FIFO buffers
 
 #define BUFFERSIZE1 256
 CG_BEFORE_BUFFER
-float32_t dsp_buf1[BUFFERSIZE1]={0};
+float dsp_buf1[BUFFERSIZE1]={0};
 
 #define BUFFERSIZE2 256
 CG_BEFORE_BUFFER
@@ -110,7 +111,7 @@ q15_t dsp_buf2[BUFFERSIZE2]={0};
 
 #define BUFFERSIZE3 256
 CG_BEFORE_BUFFER
-float32_t dsp_buf3[BUFFERSIZE3]={0};
+float dsp_buf3[BUFFERSIZE3]={0};
 
 #define BUFFERSIZE4 1
 CG_BEFORE_BUFFER
@@ -141,6 +142,7 @@ CG_BEFORE_BUFFER
 q15_t dsp_buf10[BUFFERSIZE10]={0};
 
 
+
 CG_BEFORE_SCHEDULER_FUNCTION
 uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
 {
@@ -151,9 +153,9 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /*
     Create FIFOs objects
     */
-    FIFO<float32_t,FIFOSIZE0,1,0> fifo0(dsp_buf1);
+    FIFO<float,FIFOSIZE0,1,0> fifo0(dsp_buf1);
     FIFO<q15_t,FIFOSIZE1,1,0> fifo1(dsp_buf2);
-    FIFO<float32_t,FIFOSIZE2,1,0> fifo2(dsp_buf3);
+    FIFO<float,FIFOSIZE2,1,0> fifo2(dsp_buf3);
     FIFO<q15_t,FIFOSIZE3,1,0> fifo3(dsp_buf4);
     FIFO<q15_t,FIFOSIZE4,1,0> fifo4(dsp_buf5);
     FIFO<q15_t,FIFOSIZE5,1,0> fifo5(dsp_buf6);
@@ -166,17 +168,17 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /* 
     Create node objects
     */
-    ADC<float32_t,256> adc(fifo0,dsp_context);
+    ADC<float,256> adc(fifo0,dsp_context);
     LogicAnalyzer<q15_t,1> amplitude_log(fifo9,&EOUT);
-    DAC<float32_t,256> dac(fifo2,dsp_context);
-    Duplicate2<q15_t,256,q15_t,256,q15_t,256> dup0(fifo4,fifo5,fifo6);
-    Duplicate2<q15_t,1,q15_t,1,q15_t,1> dup1(fifo7,fifo8,fifo9);
+    DAC<float,256> dac(fifo2,dsp_context);
+    Duplicate<q15_t,256,q15_t,256> dup0(fifo4,{&fifo5,&fifo6});
+    Duplicate<q15_t,1,q15_t,1> dup1(fifo7,{&fifo8,&fifo9});
     IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4);
     RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7);
     Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13763);
     LogicAnalyzer<q15_t,1> threshold_log(fifo3,&TOUT);
-    ToFixedPoint<float32_t,256,q15_t,256> toFixedPoint(fifo0,fifo1);
-    ToFloat<q15_t,256,float32_t,256> toFloat(fifo5,fifo2);
+    ToFixedPoint<float,256,q15_t,256> toFixedPoint(fifo0,fifo1);
+    ToFloat<q15_t,256,float,256> toFloat(fifo5,fifo2);
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;

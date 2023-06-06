@@ -6,9 +6,9 @@ This is an example project showing the usage of the CMSIS-Stream software compon
 
 ## The DSP compute graph
 
-It is the original uVision `DSP_App` demo converted to [CMSIS-DSP Compute Graph](https://github.com/ARM-software/CMSIS-DSP/tree/main/ComputeGraph).
+It is the original uVision `DSP_App` demo converted to the [CMSIS-Stream](https://github.com/ARM-software/CMSIS-Stream) technology.
 
-The implemented graph is:
+The streaming graph implemented with CMSIS-Stream is:
 
 ![graph](ComputeGraph/Pictures/graph.png)
 

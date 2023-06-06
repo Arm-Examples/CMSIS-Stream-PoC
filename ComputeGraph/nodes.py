@@ -1,5 +1,5 @@
-from cmsisdsp.cg.scheduler import *
-from cmsisdsp.cg.scheduler import GenericNode,GenericSink,GenericSource
+from cmsis_stream.cg.scheduler import *
+from cmsis_stream.cg.scheduler import GenericNode,GenericSink,GenericSource
 import cmsisdsp.fixedpoint as fixed 
 
 ##############################
