@@ -3,138 +3,138 @@
 
 
 digraph structs {
-    node [shape=plaintext]
+    bgcolor = "white"
+    node [shape=plaintext,color="black",fontcolor="black",fontname="Times-Roman"]
     rankdir=LR
-    edge [arrowsize=0.5]
-    fontname="times"
+    edge [arrowsize="0.5",color="black",fontcolor="black",fontname="Times-Roman"]
 
 
 adc [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">adc<BR/>(ADC)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">adc<BR/>(ADC)</FONT></TD>
   </TR>
 </TABLE>>];
 
 amplitude_log [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">amplitude_log<BR/>(LogicAnalyzer)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">amplitude_log<BR/>(LogicAnalyzer)</FONT></TD>
   </TR>
 </TABLE>>];
 
 dac [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">dac<BR/>(DAC)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">dac<BR/>(DAC)</FONT></TD>
   </TR>
 </TABLE>>];
 
-dup0 [shape=point,label=dup0]
+dup0 [shape=point,label="dup0"]
 
-dup1 [shape=point,label=dup1]
+dup1 [shape=point,label="dup1"]
 
 iir [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">iir<BR/>(IIR)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">iir<BR/>(IIR)</FONT></TD>
   </TR>
 </TABLE>>];
 
 rms [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">rms<BR/>(RMS)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">rms<BR/>(RMS)</FONT></TD>
   </TR>
 </TABLE>>];
 
 threshold [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">threshold<BR/>(Threshold)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">threshold<BR/>(Threshold)</FONT></TD>
   </TR>
 </TABLE>>];
 
 threshold_log [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">threshold_log<BR/>(LogicAnalyzer)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">threshold_log<BR/>(LogicAnalyzer)</FONT></TD>
   </TR>
 </TABLE>>];
 
 toFixedPoint [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toFixedPoint<BR/>(ToFixedPoint)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">toFixedPoint<BR/>(ToFixedPoint)</FONT></TD>
   </TR>
 </TABLE>>];
 
 toFloat [label=<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i">toFloat<BR/>(ToFloat)</TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">toFloat<BR/>(ToFloat)</FONT></TD>
   </TR>
 </TABLE>>];
 
 
 
-adc:i -> toFixedPoint:i [label="f32(256)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+adc:i -> toFixedPoint:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<f32(256)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-toFixedPoint:i -> iir:i [label="q15(256)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+toFixedPoint:i -> iir:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(256)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-toFloat:i -> dac:i [label="f32(256)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+toFloat:i -> dac:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<f32(256)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-threshold:i -> threshold_log:i [label="q15(1)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+threshold:i -> threshold_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>]
 
 iir:i ->  
-dup0 [label="q15(256)"
+dup0 [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(256)>
 
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
  
-dup0 -> toFloat:i [label="q15(256)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
+dup0 -> toFloat:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(256)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>
 ]
 
  
-dup0 -> rms:i [label="q15(512)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >384</FONT>
+dup0 -> rms:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(512)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >384</FONT>
 </TD></TR></TABLE>>
 ]
 
 rms:i ->  
-dup1 [label="q15(1)"
+dup1 [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
 
-,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>]
 
  
-dup1 -> threshold:i [label="q15(1)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+dup1 -> threshold:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>
 ]
 
  
-dup1 -> amplitude_log:i [label="q15(1)"
-,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
+dup1 -> amplitude_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
 </TD></TR></TABLE>>
 ]
 
