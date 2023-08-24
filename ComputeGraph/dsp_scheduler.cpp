@@ -1,9 +1,9 @@
 /*
 
-Generated with CMSIS-DSP Compute Graph Scripts.
-The generated code is not covered by CMSIS-DSP license.
+Generated with CMSIS-Stream python scripts.
+The generated code is not covered by CMSIS-Stream license.
 
-The support classes and code is covered by CMSIS-DSP license.
+The support classes and code are covered by CMSIS-Stream license.
 
 */
 
@@ -64,11 +64,11 @@ The support classes and code is covered by CMSIS-DSP license.
 #endif
 
 #if !defined(CG_BEFORE_NODE_EXECUTION)
-#define CG_BEFORE_NODE_EXECUTION
+#define CG_BEFORE_NODE_EXECUTION(ID)
 #endif
 
 #if !defined(CG_AFTER_NODE_EXECUTION)
-#define CG_AFTER_NODE_EXECUTION
+#define CG_AFTER_NODE_EXECUTION(ID)
 #endif
 
 
@@ -76,15 +76,18 @@ The support classes and code is covered by CMSIS-DSP license.
 CG_AFTER_INCLUDES
 
 
+using namespace arm_cmsis_stream;
+
 /*
 
 Description of the scheduling. 
 
 */
-static unsigned int schedule[28]=
+static uint8_t schedule[28]=
 { 
 0,9,5,3,10,2,0,9,5,3,10,2,6,4,1,7,8,0,9,5,3,10,2,6,4,1,7,8,
 };
+
 
 CG_BEFORE_FIFO_BUFFERS
 /***********
@@ -170,17 +173,17 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
     /* 
     Create node objects
     */
-    ADC<float,256> adc(fifo0,dsp_context);
-    LogicAnalyzer<q15_t,1> amplitude_log(fifo9,&EOUT);
-    DAC<float,256> dac(fifo2,dsp_context);
-    Duplicate<q15_t,256,q15_t,256> dup0(fifo4,{&fifo5,&fifo6});
-    Duplicate<q15_t,1,q15_t,1> dup1(fifo7,{&fifo8,&fifo9});
-    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4);
-    RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7);
-    Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13763);
-    LogicAnalyzer<q15_t,1> threshold_log(fifo3,&TOUT);
-    ToFixedPoint<float,256,q15_t,256> toFixedPoint(fifo0,fifo1);
-    ToFloat<q15_t,256,float,256> toFloat(fifo5,fifo2);
+    ADC<float,256> adc(fifo0,dsp_context); /* Node ID = 0 */
+    LogicAnalyzer<q15_t,1> amplitude_log(fifo9,&EOUT); /* Node ID = 1 */
+    DAC<float,256> dac(fifo2,dsp_context); /* Node ID = 2 */
+    Duplicate<q15_t,256,q15_t,256> dup0(fifo4,{&fifo5,&fifo6}); /* Node ID = 3 */
+    Duplicate<q15_t,1,q15_t,1> dup1(fifo7,{&fifo8,&fifo9}); /* Node ID = 4 */
+    IIR<q15_t,256,q15_t,256> iir(fifo1,fifo4); /* Node ID = 5 */
+    RMS<q15_t,384,q15_t,1> rms(fifo6,fifo7); /* Node ID = 6 */
+    Threshold<q15_t,1,q15_t,1> threshold(fifo8,fifo3,13763); /* Node ID = 7 */
+    LogicAnalyzer<q15_t,1> threshold_log(fifo3,&TOUT); /* Node ID = 8 */
+    ToFixedPoint<float,256,q15_t,256> toFixedPoint(fifo0,fifo1); /* Node ID = 9 */
+    ToFloat<q15_t,256,float,256> toFloat(fifo5,fifo2); /* Node ID = 10 */
 
     /* Run several schedule iterations */
     CG_BEFORE_SCHEDULE;
@@ -192,7 +195,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
         for(unsigned long id=0 ; id < 28; id++)
         {
             EventRecord2 (Evt_Node, schedule[id], 0);
-            CG_BEFORE_NODE_EXECUTION;
+            CG_BEFORE_NODE_EXECUTION(schedule[id]);
 
             switch(schedule[id])
             {
@@ -265,7 +268,7 @@ uint32_t dsp_scheduler(int *error,dsp_context_t *dsp_context)
                 default:
                 break;
             }
-            CG_AFTER_NODE_EXECUTION;
+            CG_AFTER_NODE_EXECUTION(schedule[id]);
             if (cgStaticError<0)
             {
                 EventRecord2 (Evt_Error, cgStaticError, 0);

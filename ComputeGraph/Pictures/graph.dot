@@ -96,11 +96,9 @@ toFloat:i -> dac:i [style="solid",color="black",fontsize="12.0",fontcolor="black
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >256</FONT>
 </TD></TR></TABLE>>]
 
-threshold:i -> threshold_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
-,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
-</TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
-</TD></TR></TABLE>>]
+threshold:i -> threshold_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15>
+
+]
 
 iir:i ->  
 dup0 [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(256)>
@@ -121,21 +119,18 @@ dup0 -> rms:i [style="solid",color="black",fontsize="12.0",fontcolor="black",lab
 ]
 
 rms:i ->  
-dup1 [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
+dup1 [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15>
 
-,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
-</TD></TR></TABLE>>]
-
- 
-dup1 -> threshold:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
-,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
-</TD></TR></TABLE>>
 ]
 
  
-dup1 -> amplitude_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15(1)>
-,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >1</FONT>
-</TD></TR></TABLE>>
+dup1 -> threshold:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15>
+
+]
+
+ 
+dup1 -> amplitude_log:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<q15>
+
 ]
 
 

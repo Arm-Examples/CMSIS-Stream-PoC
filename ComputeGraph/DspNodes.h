@@ -2,6 +2,9 @@
 #define _DSP_NODES_H_
 
 #include "cg_status.h"
+
+using namespace arm_cmsis_stream;
+
 #include "IIR.h"
 #include "FIR.h"
 #include "ConversionNodes.h"
